@@ -1,0 +1,75 @@
+# Инфраструктура проекта (шаг 2). Поднять: make up. Приложение: make dev. Воркер Temporal (шаг 3): make worker.
+services:
+  db:
+    image: pgvector/pgvector:pg17            # PostgreSQL 17 с уже собранным pgvector
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: cards
+    ports: ["${DB_PORT:-5433}:5432"]        # хост-порт настраиваемый: 5432 часто занят другим Postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/db:/docker-entrypoint-initdb.d:ro   # создаёт базу cards_test для тестов
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d cards"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  temporal:                                  # движок устойчивых процессов, dev-режим: один контейнер, UI на :8233
+    image: temporalio/temporal:latest
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--db-filename", "/home/temporal/temporal.db"]   # состояние процессов в файле, переживает рестарт
+    ports: ["7233:7233", "8233:8233"]
+    volumes:
+      - temporal-data:/home/temporal       # домашняя папка пользователя temporal: том наследует её права
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "127.0.0.1:7233"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  ollama:                                    # сервер моделей, OpenAI-совместимый API на :11434/v1 (шаг 3)
+    image: ollama/ollama
+    ports: ["${OLLAMA_PORT:-11435}:11434"]  # 11434 обычно занят Ollama на хосте
+    volumes:
+      - ollama:/root/.ollama
+
+  embeddings:                                # локальные эмбеддинги (шаг 6): /v1/embeddings на :8080
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-latest
+    command: ["--model-id", "intfloat/multilingual-e5-small"]
+    ports: ["${EMBEDDINGS_PORT:-8080}:80"]
+    volumes:
+      - hf-cache:/data
+
+  app:                                       # HTTP API: Symfony на FrankenPHP в worker-режиме
+    build: .
+    image: cards-app:dev
+    environment:
+      SERVER_NAME: ":8000"
+      FRANKENPHP_CONFIG: |                   # приложение живёт в памяти между запросами; watch перезапускает его при правке кода
+        worker {
+          file ./public/index.php
+          watch
+        }
+    ports: ["${APP_PORT:-8000}:8000"]
+    volumes:
+      - .:/app
+    depends_on:
+      db: { condition: service_healthy }
+      temporal: { condition: service_healthy }
+
+  worker:                                    # воркер процессов Temporal (появляется на шаге 3)
+    image: cards-app:dev
+    command: rr serve -c .rr.yaml
+    volumes:
+      - .:/app
+    depends_on:
+      db: { condition: service_healthy }
+      temporal: { condition: service_healthy }
+    profiles: ["worker"]                     # не поднимается по умолчанию, пока нет bin/worker.php
+
+volumes:
+  db-data: {}
+  temporal-data: {}
+  ollama: {}
+  hf-cache: {}

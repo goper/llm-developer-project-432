@@ -1,0 +1,5 @@
+# Только DBAL, без ORM: SQL пишется руками в src/Repository (индексы pgvector, генерируемые колонки, оконные функции).
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        profiling_collect_backtrace: '%kernel.debug%'

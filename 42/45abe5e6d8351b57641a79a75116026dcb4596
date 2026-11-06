@@ -1,0 +1,209 @@
+.env
+  s_a545f2d4e2e234::t_978569a3d191e0 36,38-59
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-35,37
+config/packages/property_info.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-3
+.gitignore
+  s_a545f2d4e2e234::t_978569a3d191e0 1-30
+Dockerfile
+  s_a545f2d4e2e234::t_6edc666418efdc 1-10
+config/packages/translation.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-5
+composer.json
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-88
+tests/bootstrap.php
+  s_a545f2d4e2e234::t_b8fc10a0cf3f21 1-13
+src/Command/MigrateCommand.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-35
+config/packages/monolog.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-55
+compose.yml
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-8,10-20,22-23,25-32,34-39,41-53,55-75
+  s_a545f2d4e2e234::t_88142ebeba6e67 9,33,40,54
+config/packages/doctrine.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 2-5
+  s_a545f2d4e2e234::t_978569a3d191e0 1
+README.md
+  s_a545f2d4e2e234::t_88142ebeba6e67 45-48
+  s_a545f2d4e2e234::t_da134bead86be0 5-7,9,11-13,17-21,23,25,30-40,43-44,49-88,90-106
+.dockerignore
+  s_a545f2d4e2e234::t_978569a3d191e0 1-4
+config/packages/nyholm_psr7.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-11
+src/Repository/System.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-19,22-28
+db/migrations/0001_init.sql
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-2
+src/Core/Config.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-45
+.env.test
+  s_a545f2d4e2e234::t_978569a3d191e0 1-4
+data/golden_cards.json
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-138
+tests/Core/MigrateTest.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-45
+config/bundles.php
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-7
+src/Core/Migrate.php
+  s_a545f2d4e2e234::t_b8fc10a0cf3f21 43,63,65
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-42,44-62,64,66-67
+config/reference.php
+  s_a545f2d4e2e234::t_be6bb631f029c5 1-1163
+src/Kernel.php
+  s_a545f2d4e2e234::t_b8fc10a0cf3f21 1-13
+phpunit.dist.xml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-44
+src/Controller/HealthController.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-14,16,18-42
+Makefile
+  s_a545f2d4e2e234::t_57b72e5a687c6f 3-5,22,31,41,44
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-2,6-21,23-30,32-40,42-43,45-50
+docker/db/init.sql
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-2
+src/Core/Db.php
+  s_a545f2d4e2e234::t_4a2731109b9e61 36,41
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-35,37-40,42-45
+.rr.yaml
+  s_a545f2d4e2e234::t_2c35d01a9c0166 1-8
+config/packages/validator.yaml
+  s_a545f2d4e2e234::t_a50ffabb103d8f 1-11
+tests/Controller/HealthControllerTest.php
+  s_a545f2d4e2e234::t_cd0c72a45ff298 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.67",
+  "base_commit_sha": "4245abe5e6d8351b57641a79a75116026dcb4596",
+  "prompts": {},
+  "sessions": {
+    "s_a545f2d4e2e234": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d4470a2-5a41-460b-bb77-fe3c8f8cc5f5",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-fable-5-1",
+          "input_tokens": 7378,
+          "output_tokens": 1343017,
+          "cache_read_tokens": 82506240,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 2067276,
+          "assistant_messages": 251,
+          "turns": 9,
+          "ai_wall_ms": 3678359,
+          "first_ts": "2026-11-05T10:29:05.626Z",
+          "last_ts": "2026-11-06T07:09:38.712Z",
+          "session_total_output_tokens": 1775725
+        },
+        {
+          "model": "claude-fable-5-1",
+          "input_tokens": 832,
+          "output_tokens": 432708,
+          "cache_read_tokens": 4744765,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 409216,
+          "assistant_messages": 26,
+          "turns": 0,
+          "ai_wall_ms": 1472434,
+          "first_ts": "2026-11-05T10:35:54.619Z",
+          "last_ts": "2026-11-05T11:01:01.002Z",
+          "skill": "artifact-diagramming",
+          "skill_invocations": 1,
+          "session_total_output_tokens": 1775725
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Artifact",
+          "model": "claude-fable-5-1",
+          "calls": 7,
+          "result_chars": 48069,
+          "result_input_tokens": 194,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 29513,
+          "call_output_tokens": 15194
+        },
+        {
+          "tool": "Bash",
+          "model": "claude-fable-5-1",
+          "calls": 105,
+          "result_chars": 221772,
+          "result_input_tokens": 2242,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 625760,
+          "call_output_tokens": 870178
+        },
+        {
+          "tool": "Read",
+          "model": "claude-fable-5-1",
+          "calls": 47,
+          "result_chars": 165850,
+          "result_input_tokens": 1504,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 186349,
+          "call_output_tokens": 56599
+        },
+        {
+          "tool": "Skill",
+          "model": "claude-fable-5-1",
+          "calls": 1,
+          "result_chars": 37,
+          "result_input_tokens": 32,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 28501,
+          "call_output_tokens": 3599
+        },
+        {
+          "tool": "ToolSearch",
+          "model": "claude-fable-5-1",
+          "calls": 3,
+          "result_chars": 0,
+          "result_input_tokens": 96,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 35153,
+          "call_output_tokens": 4313
+        },
+        {
+          "tool": "mcp__clau_ai_Context7__query-docs",
+          "model": "claude-fable-5-1",
+          "mcp_server": "clau_ai_Context7",
+          "calls": 1,
+          "result_chars": 97,
+          "result_input_tokens": 0,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 46,
+          "call_output_tokens": 276
+        },
+        {
+          "tool": "mcp__claude_ai_Context7__query-docs",
+          "model": "claude-fable-5-1",
+          "mcp_server": "claude_ai_Context7",
+          "calls": 4,
+          "result_chars": 17290,
+          "result_input_tokens": 96,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 8030,
+          "call_output_tokens": 1125
+        },
+        {
+          "tool": "mcp__claude_ai_Context7__resolve-library-id",
+          "model": "claude-fable-5-1",
+          "mcp_server": "claude_ai_Context7",
+          "calls": 3,
+          "result_chars": 3630,
+          "result_input_tokens": 64,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 5100,
+          "call_output_tokens": 6822
+        }
+      ],
+      "context_at_start_tokens": 47939,
+      "accepted_lines": 2227,
+      "overridden_lines": 6
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

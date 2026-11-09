@@ -192,13 +192,18 @@ def count_for_document(document_id: str) -> int:
     return int(count)
 
 
-def get_by_ids(chunk_ids: list[str]) -> dict[str, ChunkHit]:
-    """Проверка ссылок: какие из фрагментов реально есть в базе."""
+def get_chunks_by_ids(conn: Connection | None, chunk_ids: list[str]) -> dict[str, ChunkHit]:
+    """Проверка ссылок: какие из фрагментов реально есть в базе. Ключ — chunk_id."""
     if not chunk_ids:
         return {}
-    with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
+    with _use(conn) as c, c.cursor(row_factory=dict_row) as cur:
         cur.execute(f"SELECT {_FIELDS}, 0.0::float AS score FROM chunks c WHERE c.id = ANY(%s)", (chunk_ids,))
         return {r["id"]: _hit(r, 0.0) for r in cur.fetchall()}
+
+
+def get_by_ids(chunk_ids: list[str]) -> dict[str, ChunkHit]:
+    """То же, что get_chunks_by_ids, на соединении из пула."""
+    return get_chunks_by_ids(None, chunk_ids)
 
 
 def list_without_embedding(limit: int, document_id: str | None = None) -> list[tuple[str, str, str | None]]:

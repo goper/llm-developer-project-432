@@ -13,7 +13,7 @@ from app.core.config import get_settings
 from app.parsers.chunker import chunk_units
 from app.parsers.docx import parse_docx
 from app.parsers.pdf import parse_pdf
-from app.parsers.types import ParseError, Unit
+from app.parsers.types import Chunk, ParseError, Unit
 from app.parsers.xlsx import parse_xlsx
 from app.rag.reindex import reindex
 from app.repositories import chunks as chunks_repo
@@ -63,6 +63,31 @@ def _chunk_id(document_id: str, position: int) -> str:
     return hashlib.sha1(f"{document_id}:{position}".encode()).hexdigest()[:12]
 
 
+def parse_to_chunks(
+    path: Path,
+    *,
+    ext: str | None = None,
+    size: int | None = None,
+    overlap: int | None = None,
+) -> list[Chunk]:
+    """Разбор файла до фрагментов, без базы: парсер по расширению, нормализация, резка.
+
+    Скан без текстового слоя и пустой документ дают ParseError с причиной, а не пустой список.
+    """
+    settings = get_settings()
+    kind = (ext or path.suffix).lower()
+    if kind not in PARSERS:
+        raise ParseError(f"формат {kind or '—'} не поддерживается: нужен pdf, docx или xlsx")
+    units: list[Unit] = PARSERS[kind](Path(path))
+    if not units:
+        raise ParseError("в документе не нашлось текста")
+    return chunk_units(
+        units,
+        size=size or settings.chunk_size,
+        overlap=settings.chunk_overlap if overlap is None else overlap,
+    )
+
+
 def parse_document(doc_id: str) -> str:
     """Шаг процесса разбора. Возвращает итоговый статус документа."""
     doc = documents_repo.get(doc_id)
@@ -71,10 +96,7 @@ def parse_document(doc_id: str) -> str:
     documents_repo.set_status(doc_id, "parsing")
     ext = Path(doc.filename).suffix.lower()
     try:
-        units: list[Unit] = PARSERS[ext](source_path(doc))
-        if not units:
-            raise ParseError("в документе не нашлось текста")
-        drafts = chunk_units(units, size=get_settings().chunk_size, overlap=get_settings().chunk_overlap)
+        drafts = parse_to_chunks(source_path(doc), ext=ext)
     except ParseError as exc:
         documents_repo.set_status(doc_id, "failed", str(exc))
         logger.warning("документ %s не разобран: %s", doc_id, exc)

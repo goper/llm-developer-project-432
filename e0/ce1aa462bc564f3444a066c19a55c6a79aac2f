@@ -1,0 +1,52 @@
+app/guardrails/pii.py
+  s_58d0b9113ca8a9::t_cc328b686bc112 169-173
+app/parsers/pdf.py
+  s_58d0b9113ca8a9::t_cc328b686bc112 26-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "e0ce1aa462bc564f3444a066c19a55c6a79aac2f",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 8,
+          "output_tokens": 2651,
+          "cache_read_tokens": 1537756,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 2908,
+          "assistant_messages": 4,
+          "turns": 0,
+          "ai_wall_ms": 7290,
+          "first_ts": "2026-11-09T06:30:54.015Z",
+          "last_ts": "2026-11-09T06:33:29.642Z",
+          "session_total_output_tokens": 121029
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 2,
+          "result_chars": 814,
+          "result_input_tokens": 4,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 1788,
+          "call_output_tokens": 1059
+        }
+      ],
+      "accepted_lines": 9,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

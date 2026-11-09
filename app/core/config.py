@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     max_repair_rounds: int = 3  # петля переделки: не больше трёх кругов
     max_structured_attempts: int = 3  # лечение невалидного ответа модели
     confidence_threshold: float = 0.7  # ниже порога карточка ждёт человека
-    title_max_length: int = 80
+    title_max_length: int = 60
     injection_suspicious_limit: int = 3  # сколько подозрительных фрагментов — документ к человеку
 
     # Temporal: движок устойчивых процессов.
@@ -67,6 +67,11 @@ class Settings(BaseSettings):
 
     # Логи.
     log_level: str = "INFO"
+
+    @property
+    def temporal_host(self) -> str:
+        """Адрес Temporal вида host:port (то же, что temporal_address)."""
+        return self.temporal_address
 
 
 @lru_cache

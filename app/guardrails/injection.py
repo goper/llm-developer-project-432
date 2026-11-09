@@ -148,6 +148,34 @@ class InjectionDetector:
         return verdicts
 
 
-def detect_injection_regex(text: str) -> bool:
-    """Быстрый уровень детектора: сработало ли хотя бы одно правило по тексту."""
-    return bool(check_rules(text))
+@dataclass(frozen=True)
+class InjectionVerdict:
+    """Вердикт детектора по одному тексту. В условии ведёт себя как suspicious."""
+
+    suspicious: bool
+    reason: str = ""
+    rule_hits: tuple[str, ...] = ()
+
+    def __bool__(self) -> bool:
+        return self.suspicious
+
+
+def detect_injection_regex(text: str) -> InjectionVerdict:
+    """Уровень 1, правила по тексту: бесплатно и быстро."""
+    hits = tuple(check_rules(text))
+    return InjectionVerdict(bool(hits), reason=", ".join(hits), rule_hits=hits)
+
+
+async def detect_injection_llm(text: str) -> InjectionVerdict:
+    """Уровень 2, дешёвая модель. Ошибку вызова не глотает: решение «закрыто при сбое» у вызывающего."""
+    import asyncio
+
+    from app.llm.client import get_llm_client
+
+    reply = await asyncio.to_thread(
+        get_llm_client().chat, _build_messages(text), purpose="injection_check", cheap=True
+    )
+    manipulation = _parse_manipulation(reply.text)
+    if manipulation is None:
+        return InjectionVerdict(True, reason="ответ детектора не разобрать")
+    return InjectionVerdict(manipulation, reason="модель" if manipulation else "")

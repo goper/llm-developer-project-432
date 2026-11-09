@@ -15,13 +15,15 @@ class SourceRef(BaseModel):
     """Ссылка на фрагмент документа, откуда взято утверждение."""
 
     chunk_id: str = Field(min_length=1)
+    doc_id: str = ""
     page: int | None = None
     section: str | None = None
+    score: float | None = None
 
 
 class Seo(BaseModel):
-    title: str = Field(max_length=60)
-    description: str = Field(max_length=160)
+    title: str = Field(default="", max_length=60)
+    description: str = Field(default="", max_length=160)
     keywords: list[str] = Field(default_factory=list, max_length=10)
 
 
@@ -32,7 +34,7 @@ class Card(BaseModel):
     # Какой фрагмент подтверждает характеристику: имя характеристики -> chunk_id.
     characteristic_sources: dict[str, str] = Field(default_factory=dict)
     benefits: list[str] = Field(default_factory=list)
-    seo: Seo
+    seo: Seo = Field(default_factory=Seo)
     sources: list[SourceRef] = Field(default_factory=list)
     missing_fields: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0.0, le=1.0)

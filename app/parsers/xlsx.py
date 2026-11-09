@@ -1,22 +1,21 @@
 """Разбор xlsx: каждая строка данных листа — единица kind="row"."""
 
 import zipfile
-from pathlib import Path
 from typing import Any
 
 import openpyxl
 from openpyxl.utils.exceptions import InvalidFileException
 
 from app.parsers.normalizer import format_row, normalize_text
-from app.parsers.types import ParseError, Unit
+from app.parsers.types import ParseError, Source, Unit, open_source, source_name
 
 
-def parse_xlsx(path: Path) -> list[Unit]:
+def parse_xlsx(source: Source) -> list[Unit]:
     """Вернуть строки всех листов; первая строка каждого листа — заголовки колонок."""
     try:
-        workbook = openpyxl.load_workbook(path, data_only=True)
+        workbook = openpyxl.load_workbook(open_source(source), data_only=True)
     except (InvalidFileException, zipfile.BadZipFile, OSError) as exc:
-        raise ParseError(f"не удалось открыть xlsx {path.name}: {exc}") from exc
+        raise ParseError(f"не удалось открыть xlsx {source_name(source)}: {exc}") from exc
 
     units: list[Unit] = []
     try:

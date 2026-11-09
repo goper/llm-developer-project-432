@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.agents.prompts import repair_messages, schema_text
 from app.core.config import get_settings
+from app.llm.client import run_agent
 from app.services.json_utils import JsonReplyError, parse_json_reply
 
 logger = logging.getLogger(__name__)
@@ -175,3 +176,69 @@ def repair_fields[T: BaseModel](
 ) -> dict[str, Any]:
     """Публичная точечная переделка для петли проверки пайплайна."""
     return _repair_fields(llm, draft, problems, model_cls, job_id=job_id, fragments_text=fragments_text)
+
+
+# --- Асинхронный путь через агентов ролей (run_agent). ---
+
+
+async def validate_or_retry[T: BaseModel](
+    agent: Any,
+    prompt: str,
+    model_cls: type[T] | None = None,
+    *,
+    max_attempts: int | None = None,
+) -> T:
+    """Ответ агента проверяется схемой; ошибка проверки уходит обратно агенту.
+
+    Всего max_attempts попыток (по умолчанию 3: первая и два исправления). Если все мимо —
+    поднимается последняя ошибка проверки: невалидный ответ дальше не идёт.
+    """
+    if model_cls is None:
+        from app.schemas.cards import CardDraft
+
+        model_cls = CardDraft  # type: ignore[assignment]
+    attempts = max_attempts or get_settings().max_structured_attempts
+    current = prompt
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        raw = await run_agent(agent, current)
+        try:
+            return model_cls.model_validate(parse_json_reply(raw))
+        except (JsonReplyError, ValidationError) as exc:
+            last_error = exc
+            logger.warning("попытка %d/%d: ответ агента не прошёл проверку: %s", attempt, attempts, exc)
+            current = (
+                f"{prompt}\n\nТвой прошлый ответ не прошёл проверку: {_describe(exc)}\n"
+                "Исправь ошибки и верни JSON целиком, без пояснений."
+            )
+    assert last_error is not None
+    raise last_error
+
+
+async def regenerate_field[T: BaseModel](
+    agent: Any, card: T, field: str, problem: str = "", context: str = ""
+) -> T:
+    """Точечная переделка: агент переписывает одно поле, остальные поля карточки не меняются."""
+    if isinstance(agent, BaseModel):  # допускаем порядок (card, field, problem, agent)
+        agent, card, field, problem = problem, agent, card, field  # type: ignore[assignment]
+    prompt = (
+        f"Исправь в карточке только поле «{field}» (field: {field}). "
+        f"Проблема: {problem or 'не прошло проверку'}. Остальные поля не меняй.\n"
+        f'Верни JSON {{"{field}": новое значение}} или карточку целиком.\n\n'
+        f"КАРТОЧКА:\n{card.model_dump_json()}"
+    )
+    if context:
+        prompt += f"\n\nФРАГМЕНТЫ:\n{context}"
+    raw = await run_agent(agent, prompt)
+    data = parse_json_reply(raw)
+    value = data.get(field, data.get("value")) if isinstance(data, dict) else data
+    if isinstance(data, dict) and "fields" in data and isinstance(data["fields"], dict):
+        value = data["fields"].get(field, value)
+    return type(card).model_validate({**card.model_dump(), field: value})
+
+
+def confidence_gate(card: Any, threshold: float | None = None) -> str:
+    """Низкая уверенность — карточку ждёт человек (needs_review), иначе — обычное подтверждение."""
+    limit = get_settings().confidence_threshold if threshold is None else threshold
+    confidence = card.get("confidence", 0) if isinstance(card, dict) else getattr(card, "confidence", 0)
+    return "needs_review" if float(confidence or 0) < limit else "waiting_approval"

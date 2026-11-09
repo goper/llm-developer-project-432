@@ -2,7 +2,6 @@
 
 import zipfile
 from collections.abc import Iterator
-from pathlib import Path
 
 import docx
 from docx.document import Document as DocxDocument
@@ -12,15 +11,15 @@ from docx.table import Table
 from docx.text.paragraph import Paragraph
 
 from app.parsers.normalizer import format_row, normalize_text
-from app.parsers.types import ParseError, Unit
+from app.parsers.types import ParseError, Source, Unit, open_source, source_name
 
 
-def parse_docx(path: Path) -> list[Unit]:
+def parse_docx(source: Source) -> list[Unit]:
     """Вернуть текстовые единицы по секциям и строки таблиц (kind="row") в порядке документа."""
     try:
-        document = docx.Document(path)
+        document = docx.Document(open_source(source))
     except (PackageNotFoundError, zipfile.BadZipFile, OSError) as exc:
-        raise ParseError(f"не удалось открыть docx {path.name}: {exc}") from exc
+        raise ParseError(f"не удалось открыть docx {source_name(source)}: {exc}") from exc
 
     units: list[Unit] = []
     lines: list[str] = []

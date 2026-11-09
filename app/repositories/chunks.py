@@ -49,13 +49,13 @@ class ChunkHit:
         }
 
 
-_FIELDS = "c.id, c.document_id, c.text, c.page, c.section, c.sku, c.brand"
+_FIELDS = "c.id, c.doc_id, c.text, c.page, c.section, c.sku, c.brand"
 
 
 def _hit(row: dict[str, Any], score: float) -> ChunkHit:
     return ChunkHit(
         id=row["id"],
-        document_id=row["document_id"],
+        document_id=row["doc_id"],
         text=row["text"],
         page=row["page"],
         section=row["section"],
@@ -68,10 +68,10 @@ def _hit(row: dict[str, Any], score: float) -> ChunkHit:
 def replace_chunks(document_id: str, chunks: list[ChunkRow]) -> int:
     """Заменяет все фрагменты документа новыми. Повторный разбор даёт те же строки, без дублей."""
     with connection() as conn, conn.cursor() as cur:
-        cur.execute("DELETE FROM chunks WHERE document_id = %s", (document_id,))
+        cur.execute("DELETE FROM chunks WHERE doc_id = %s", (document_id,))
         cur.executemany(
             """
-            INSERT INTO chunks (id, document_id, position, page, section, kind, sku, brand, text)
+            INSERT INTO chunks (id, doc_id, position, page, section, kind, sku, brand, text)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             [
@@ -84,7 +84,7 @@ def replace_chunks(document_id: str, chunks: list[ChunkRow]) -> int:
 
 def count_for_document(document_id: str) -> int:
     with connection() as conn, conn.cursor() as cur:
-        cur.execute("SELECT count(*) FROM chunks WHERE document_id = %s", (document_id,))
+        cur.execute("SELECT count(*) FROM chunks WHERE doc_id = %s", (document_id,))
         (count,) = cur.fetchone()
     return int(count)
 
@@ -104,8 +104,8 @@ def list_without_embedding(limit: int, document_id: str | None = None) -> list[t
         cur.execute(
             """
             SELECT id, text, sku FROM chunks
-            WHERE embedding IS NULL AND (%s::text IS NULL OR document_id = %s::text)
-            ORDER BY document_id, position LIMIT %s
+            WHERE embedding IS NULL AND (%s::text IS NULL OR doc_id = %s::text)
+            ORDER BY doc_id, position LIMIT %s
             """,
             (document_id, document_id, limit),
         )
@@ -117,7 +117,7 @@ def count_without_embedding(document_id: str | None = None) -> int:
         cur.execute(
             """
             SELECT count(*) FROM chunks
-            WHERE embedding IS NULL AND (%s::text IS NULL OR document_id = %s::text)
+            WHERE embedding IS NULL AND (%s::text IS NULL OR doc_id = %s::text)
             """,
             (document_id, document_id),
         )
@@ -154,7 +154,7 @@ def search_vector(
             SELECT {_FIELDS}, 1 - (c.embedding <=> %(qv)s::vector) AS score
             FROM chunks c
             WHERE c.embedding IS NOT NULL
-              AND (%(doc_ids)s::text[] IS NULL OR c.document_id = ANY(%(doc_ids)s::text[]))
+              AND (%(doc_ids)s::text[] IS NULL OR c.doc_id = ANY(%(doc_ids)s::text[]))
               AND 1 - (c.embedding <=> %(qv)s::vector) >= %(threshold)s
             ORDER BY c.embedding <=> %(qv)s::vector
             LIMIT %(top_k)s
@@ -171,7 +171,7 @@ def search_text(query_text: str, *, top_k: int, document_ids: list[str] | None =
             SELECT {_FIELDS}, ts_rank_cd(c.tsv, q) AS score
             FROM chunks c, websearch_to_tsquery('russian', %(q)s) AS q
             WHERE c.tsv @@ q
-              AND (%(doc_ids)s::text[] IS NULL OR c.document_id = ANY(%(doc_ids)s::text[]))
+              AND (%(doc_ids)s::text[] IS NULL OR c.doc_id = ANY(%(doc_ids)s::text[]))
             ORDER BY score DESC
             LIMIT %(top_k)s
             """,
@@ -205,7 +205,7 @@ def search_hybrid(
                     SELECT c.id, c.embedding <=> %(qv)s::vector AS dist
                     FROM chunks c
                     WHERE c.embedding IS NOT NULL
-                      AND (%(doc_ids)s::text[] IS NULL OR c.document_id = ANY(%(doc_ids)s::text[]))
+                      AND (%(doc_ids)s::text[] IS NULL OR c.doc_id = ANY(%(doc_ids)s::text[]))
                       AND 1 - (c.embedding <=> %(qv)s::vector) >= %(threshold)s
                     ORDER BY dist
                     LIMIT %(pool)s
@@ -217,7 +217,7 @@ def search_hybrid(
                     SELECT c.id, ts_rank_cd(c.tsv, q) AS score
                     FROM chunks c, websearch_to_tsquery('russian', %(q)s) AS q
                     WHERE c.tsv @@ q
-                      AND (%(doc_ids)s::text[] IS NULL OR c.document_id = ANY(%(doc_ids)s::text[]))
+                      AND (%(doc_ids)s::text[] IS NULL OR c.doc_id = ANY(%(doc_ids)s::text[]))
                     ORDER BY score DESC
                     LIMIT %(pool)s
                 ) s

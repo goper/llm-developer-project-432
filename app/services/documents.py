@@ -6,14 +6,14 @@
 
 import hashlib
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from app.core.config import get_settings
 from app.parsers.chunker import chunk_units
 from app.parsers.docx import parse_docx
 from app.parsers.pdf import parse_pdf
-from app.parsers.types import Chunk, ParseError, Unit
+from app.parsers.types import Chunk, ParseError, Source, Unit
 from app.parsers.xlsx import parse_xlsx
 from app.rag.reindex import reindex
 from app.repositories import chunks as chunks_repo
@@ -64,28 +64,36 @@ def _chunk_id(document_id: str, position: int) -> str:
 
 
 def parse_to_chunks(
-    path: Path,
-    *,
+    source: Source,
     ext: str | None = None,
+    doc_id: str | None = None,
+    *,
     size: int | None = None,
     overlap: int | None = None,
 ) -> list[Chunk]:
     """Разбор файла до фрагментов, без базы: парсер по расширению, нормализация, резка.
 
+    source — путь или содержимое файла байтами (тогда ext обязателен: "pdf" или ".pdf").
+    Если передан doc_id, у фрагментов заполнены doc_id и chunk_id.
     Скан без текстового слоя и пустой документ дают ParseError с причиной, а не пустой список.
     """
     settings = get_settings()
-    kind = (ext or path.suffix).lower()
+    kind = (ext or (Path(source).suffix if isinstance(source, str | Path) else "")).lower()
+    if kind and not kind.startswith("."):
+        kind = f".{kind}"
     if kind not in PARSERS:
         raise ParseError(f"формат {kind or '—'} не поддерживается: нужен pdf, docx или xlsx")
-    units: list[Unit] = PARSERS[kind](Path(path))
+    units: list[Unit] = PARSERS[kind](source)
     if not units:
         raise ParseError("в документе не нашлось текста")
-    return chunk_units(
+    chunks = chunk_units(
         units,
         size=size or settings.chunk_size,
         overlap=settings.chunk_overlap if overlap is None else overlap,
     )
+    if doc_id is None:
+        return chunks
+    return [replace(c, doc_id=doc_id, chunk_id=_chunk_id(doc_id, c.position)) for c in chunks]
 
 
 def parse_document(doc_id: str) -> str:
@@ -96,7 +104,7 @@ def parse_document(doc_id: str) -> str:
     documents_repo.set_status(doc_id, "parsing")
     ext = Path(doc.filename).suffix.lower()
     try:
-        drafts = parse_to_chunks(source_path(doc), ext=ext)
+        drafts = parse_to_chunks(source_path(doc), ext, doc_id)
     except ParseError as exc:
         documents_repo.set_status(doc_id, "failed", str(exc))
         logger.warning("документ %s не разобран: %s", doc_id, exc)
@@ -104,7 +112,7 @@ def parse_document(doc_id: str) -> str:
 
     rows = [
         ChunkRow(
-            id=_chunk_id(doc_id, c.position),
+            id=c.chunk_id or _chunk_id(doc_id, c.position),
             document_id=doc_id,
             position=c.position,
             page=c.page,

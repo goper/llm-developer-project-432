@@ -60,7 +60,7 @@ def generate_messages(
     hint = f"Товар: {product_hint}." if product_hint else ""
     system = (
         BASE_RULES
-        + "\nРоль: сборка карточки. Заполни заголовок (не длиннее 80 символов), описание, характеристики, "
+        + "\nРоль: сборка карточки. Заполни заголовок (не длиннее 60 символов), описание, характеристики, "
         "выгоды, seo (title до 60, description до 160), sources (chunk_id и страница), "
         "characteristic_sources (имя характеристики -> chunk_id), missing_fields, confidence от 0 до 1. "
         "Если данные неполные — confidence ниже 1 и поля в missing_fields. Ответ строго по схеме:\n"

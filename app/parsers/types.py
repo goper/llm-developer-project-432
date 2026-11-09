@@ -1,7 +1,25 @@
 """Общие типы парсеров: ошибки, единицы текста и фрагменты."""
 
+import io
 from dataclasses import dataclass
-from typing import Literal
+from pathlib import Path
+from typing import BinaryIO, Literal
+
+# Источник для парсера: путь к файлу или содержимое файла байтами.
+Source = Path | str | bytes | bytearray | BinaryIO
+
+
+def open_source(source: Source) -> Path | BinaryIO:
+    """Байты оборачиваем в поток, путь отдаём как есть."""
+    if isinstance(source, bytes | bytearray):
+        return io.BytesIO(bytes(source))
+    if isinstance(source, str):
+        return Path(source)
+    return source
+
+
+def source_name(source: Source) -> str:
+    return source.name if isinstance(source, Path) else "файл"
 
 
 class ParseError(Exception):
@@ -34,3 +52,18 @@ class Chunk:
     section: str | None
     kind: Literal["text", "row"]
     sku: str | None
+    doc_id: str | None = None
+    chunk_id: str | None = None
+
+    @property
+    def metadata(self) -> dict[str, object]:
+        """Метаданные фрагмента: откуда он и что это."""
+        return {
+            "doc_id": self.doc_id,
+            "chunk_id": self.chunk_id,
+            "position": self.position,
+            "page": self.page,
+            "section": self.section,
+            "kind": self.kind,
+            "sku": self.sku,
+        }

@@ -23,6 +23,11 @@ class MaskResult:
     text: str
     findings: tuple[PiiFinding, ...]
 
+    def __iter__(self):
+        # Распаковка `cleaned, entities = mask_pii(text)`.
+        yield self.text
+        yield list(self.findings)
+
 
 _KIND_WORDS = {"phone": "телефон", "email": "почта", "card": "карта", "inn": "инн"}
 

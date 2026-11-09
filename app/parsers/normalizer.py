@@ -80,12 +80,19 @@ def clean_text(text: str) -> str:
     return normalize_text(text)
 
 
-def normalize(content: str | list[str]) -> str | list[str]:
+def normalize(content):
     """Нормализация документа.
 
     Строка — чистится как один текст. Список страниц — сначала убираются колонтитулы,
-    затем каждая страница чистится отдельно.
+    затем каждая страница чистится отдельно. Список блоков парсера (Unit) — то же по их текстам;
+    пустые после очистки блоки выпадают.
     """
     if isinstance(content, str):
         return normalize_text(content)
-    return [normalize_text(page) for page in strip_running_lines(list(content))]
+    items = list(content)
+    if items and not isinstance(items[0], str):
+        from dataclasses import replace
+
+        texts = [normalize_text(page) for page in strip_running_lines([u.text for u in items])]
+        return [replace(u, text=text) for u, text in zip(items, texts, strict=True) if text]
+    return [normalize_text(page) for page in strip_running_lines(items)]

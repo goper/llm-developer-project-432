@@ -109,13 +109,10 @@ def test_chunk_table_rows_are_not_split():
 
     chunks = chunk_units(units, size=300)
 
-    row_lines = []
-    for chunk in chunks:
-        assert chunk.kind == "row"
-        lines = chunk.text.split("\n")
-        assert lines[0] == f"Колонки: {header}"
-        row_lines.extend(lines[1:])
-    assert sorted(row_lines) == sorted(unit.text for unit in units)
+    # Одна строка — один фрагмент, целиком, даже если она длиннее size.
+    assert [chunk.text for chunk in chunks] == [unit.text for unit in units]
+    assert all(chunk.kind == "row" for chunk in chunks)
+    assert [chunk.sku for chunk in chunks] == [unit.sku for unit in units]
     assert [chunk.position for chunk in chunks] == list(range(len(chunks)))
 
 

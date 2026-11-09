@@ -10,7 +10,7 @@ _SENTENCE_END = ".!?;"
 
 
 def chunk_units(units: list[Unit], *, size: int = 800, overlap: int = 120) -> list[Chunk]:
-    """Порезать единицы: текст окнами с перекрытием, строки таблиц — целыми группами."""
+    """Порезать единицы: текст окнами с перекрытием, строка таблицы — целым фрагментом."""
     if size <= 0 or not 0 <= overlap < size:
         raise ValueError("нужно size > 0 и 0 <= overlap < size")
 
@@ -79,30 +79,12 @@ def _find_next_start(text: str, start: int, end: int, overlap: int) -> int:
 
 
 def _chunk_rows(rows: list[Unit], size: int) -> list[Chunk]:
-    """Группы строк одной таблицы до size символов; каждая группа начинается с «Колонки: ...»."""
-    header = rows[0].header
-    prefix = f"Колонки: {header}" if header else None
+    """Каждая строка таблицы — отдельный фрагмент «артикул: параметр значение; ...».
 
-    groups: list[list[Unit]] = []
-    current: list[Unit] = []
-    for unit in rows:
-        candidate = _join(prefix, [*(row.text for row in current), unit.text])
-        if current and len(candidate) > size:
-            groups.append(current)
-            current = []
-        current.append(unit)
-    groups.append(current)
-
-    chunks = []
-    for group in groups:
-        text = _join(prefix, [unit.text for unit in group])
-        sku = group[0].sku if len(group) == 1 else None
-        chunks.append(_make_chunk(text, group[0].page, group[0].section, "row", sku))
-    return chunks
-
-
-def _join(prefix: str | None, lines: list[str]) -> str:
-    return "\n".join([prefix, *lines] if prefix else lines)
+    Заголовки колонок уже вписаны в текст строки, поэтому строка понятна сама по себе
+    и никогда не рвётся между фрагментами (size для строк не применяется).
+    """
+    return [_make_chunk(unit.text, unit.page, unit.section, "row", unit.sku) for unit in rows]
 
 
 def _make_chunk(

@@ -21,7 +21,7 @@ class Document:
 
 _COLUMNS = """
     d.id, d.sha256, d.filename, d.size_bytes, d.status, d.error,
-    (SELECT count(*) FROM chunks c WHERE c.document_id = d.id) AS chunks_count
+    (SELECT count(*) FROM chunks c WHERE c.doc_id = d.id) AS chunks_count
 """
 
 

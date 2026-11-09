@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from app.agents.prompts import check_messages, extract_messages, generate_messages
 from app.core.config import get_settings
+from app.llm.client import run_agent  # noqa: F401  (извлечение и проверка зовут агентов через него)
 from app.rag.context import Context
 from app.schemas.cards import Card, Facts, Issue, Verdict
 from app.services.structured import ChatLike, generate_model, repair_fields

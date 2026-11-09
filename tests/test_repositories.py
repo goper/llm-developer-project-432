@@ -8,7 +8,7 @@ from app.repositories import jobs as jobs_repo
 from app.repositories.chunks import ChunkRow
 
 pytestmark = pytest.mark.db
-DIM = 384
+DIM = 768
 
 
 def unit(i: int) -> list[float]:

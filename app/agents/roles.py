@@ -31,14 +31,14 @@ CRITIC_INSTRUCTIONS = (
 
 @lru_cache
 def extract_agent() -> Agent:
-    return Agent(name="extract", instructions=EXTRACT_INSTRUCTIONS, model=get_settings().llm_cheap_model)
+    return Agent(name="Extractor", instructions=EXTRACT_INSTRUCTIONS, model=get_settings().llm_cheap_model)
 
 
 @lru_cache
 def generate_agent() -> Agent:
-    return Agent(name="generate", instructions=GENERATE_INSTRUCTIONS, model=get_settings().llm_model)
+    return Agent(name="Generator", instructions=GENERATE_INSTRUCTIONS, model=get_settings().llm_model)
 
 
 @lru_cache
 def critic_agent() -> Agent:
-    return Agent(name="critic", instructions=CRITIC_INSTRUCTIONS, model=get_settings().llm_cheap_model)
+    return Agent(name="Critic", instructions=CRITIC_INSTRUCTIONS, model=get_settings().llm_cheap_model)

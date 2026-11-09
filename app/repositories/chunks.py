@@ -39,6 +39,7 @@ class ChunkHit:
     sku: str | None
     brand: str | None
     score: float
+    filename: str | None = None
 
     @property
     def chunk_id(self) -> str:
@@ -101,12 +102,28 @@ def _hit(row: dict[str, Any], score: float) -> ChunkHit:
         sku=row["sku"],
         brand=row["brand"],
         score=score,
+        filename=row.get("filename"),
     )
 
 
 def _metadata(document_id: str, c: ChunkRow) -> dict[str, Any]:
     meta = {"doc_id": document_id, "page": c.page, "section": c.section, "kind": c.kind, "articul": c.sku}
     return {k: v for k, v in meta.items() if v is not None}
+
+
+def list_for_documents(document_ids: list[str]) -> list[ChunkHit]:
+    """Все фрагменты документов по порядку (документ, ordinal) — для карточки по документу целиком."""
+    with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
+        cur.execute(
+            f"""
+            SELECT {_FIELDS}, d.filename
+            FROM chunks c LEFT JOIN documents d ON d.id = c.doc_id
+            WHERE c.doc_id = ANY(%s::text[])
+            ORDER BY c.doc_id, c.ordinal
+            """,
+            (document_ids,),
+        )
+        return [_hit(row, 0.0) for row in cur.fetchall()]
 
 
 def replace_chunks(document_id: str, chunks: list[ChunkRow]) -> int:

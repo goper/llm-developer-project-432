@@ -178,13 +178,14 @@ class PipelineResult:
 
     card: Card
     attempts: int
-    verdict: CritiqueReport
-    status: str  # done | needs_review
+    verdict: str  # approved | rejected
+    status: str  # done | rejected
+    report: CritiqueReport | None = None
     facts: SupplierFacts | None = None
 
     @property
     def issues(self) -> list[str]:
-        return list(self.verdict.issues)
+        return list(self.report.issues) if self.report else []
 
     def __iter__(self):
         yield from (self.card, self.attempts, self.verdict, self.status)
@@ -216,7 +217,8 @@ async def critique(card: Card, facts: SupplierFacts, text: str = "") -> Critique
 async def run_pipeline(text: str, *, max_attempts: int | None = None) -> PipelineResult:
     """Извлечение, затем до max_attempts кругов «генерация -> проверка».
 
-    Проверка приняла черновик — done. Круги кончились — needs_review с последними замечаниями.
+    Проверка приняла черновик — verdict approved, status done. Круги кончились — rejected
+    с последними замечаниями проверки (report.issues).
     """
     attempts = max_attempts or get_settings().max_repair_rounds
     facts = await extract(text)
@@ -225,9 +227,9 @@ async def run_pipeline(text: str, *, max_attempts: int | None = None) -> Pipelin
         card = await generate(facts, text, issues or None)
         report = await critique(card, facts, text)
         if report.verdict == "approve":
-            return PipelineResult(card, attempt, report, "done", facts)
+            return PipelineResult(card, attempt, "approved", "done", report, facts)
         issues = list(report.issues)
-    return PipelineResult(card, attempts, report, "needs_review", facts)
+    return PipelineResult(card, attempts, "rejected", "rejected", report, facts)
 
 
 run = run_pipeline

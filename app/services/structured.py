@@ -6,6 +6,7 @@
 """
 
 import logging
+from collections.abc import Awaitable, Callable
 from typing import Any, Protocol
 
 from pydantic import BaseModel, ValidationError
@@ -24,6 +25,10 @@ class StructuredError(Exception):
 
 class CardValidationError(StructuredError):
     """Асинхронный путь: ответ агента так и не прошёл схему после всех исправлений."""
+
+
+class SourceCheckError(ValueError):
+    """Ответ прошёл схему, но не прошёл проверку кодом (например, ссылка на чужой фрагмент)."""
 
 
 class ChatReply(Protocol):
@@ -191,11 +196,16 @@ async def validate_or_retry[T: BaseModel](
     model_cls: type[T] | None = None,
     *,
     max_attempts: int | None = None,
+    check: Callable[[T], list[str]] | None = None,
+    runner: Callable[[Any, str], Awaitable[str]] | None = None,
 ) -> T:
     """Ответ агента проверяется схемой; ошибка проверки уходит обратно агенту.
 
     По умолчанию агент генерации и схема CardDraft. Всего max_attempts попыток (по умолчанию 3:
     первая и два исправления). Если все мимо — CardValidationError: невалидный ответ дальше не идёт.
+    check — дополнительная проверка кодом (например, ссылки только на фрагменты из контекста):
+    непустой список проблем считается такой же ошибкой, как несоответствие схеме.
+    runner — чем звать агента (по умолчанию run_agent этого модуля).
     """
     if model_cls is None:
         from app.schemas.cards import CardDraft
@@ -208,11 +218,16 @@ async def validate_or_retry[T: BaseModel](
     attempts = max_attempts or get_settings().max_structured_attempts
     current = prompt
     last_error: Exception | None = None
+    call = runner or run_agent
     for attempt in range(1, attempts + 1):
-        raw = await run_agent(agent, current)
+        raw = await call(agent, current)
         try:
-            return model_cls.model_validate(parse_json_reply(raw))
-        except (JsonReplyError, ValidationError) as exc:
+            result = model_cls.model_validate(parse_json_reply(raw))
+            problems = check(result) if check else []
+            if not problems:
+                return result
+            raise SourceCheckError("; ".join(problems))
+        except (JsonReplyError, ValidationError, SourceCheckError) as exc:
             last_error = exc
             logger.warning("попытка %d/%d: ответ агента не прошёл проверку: %s", attempt, attempts, exc)
             current = (

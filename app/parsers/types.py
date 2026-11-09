@@ -40,6 +40,8 @@ class Unit:
     kind: Literal["text", "row", "table"] = "text"
     header: str | None = None
     sku: str | None = None
+    # Для kind="table": строки таблицы как есть, первая — заголовки колонок.
+    rows: tuple[tuple[str, ...], ...] | None = None
 
     @property
     def content(self) -> str:

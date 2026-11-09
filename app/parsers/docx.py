@@ -68,4 +68,5 @@ def _table_units(table: Table, section: str | None) -> list[Unit]:
     if formatted is None:
         return []
     text, header_line = formatted
-    return [Unit(text=text, section=section, kind="table", header=header_line)]
+    kept = tuple(tuple(row) for row in rows if any(row))
+    return [Unit(text=text, section=section, kind="table", header=header_line, rows=kept)]

@@ -35,8 +35,8 @@ class Settings(BaseSettings):
     price_cheap_output_per_mtok: Decimal = Decimal("0.15")
 
     # Эмбеддинги: локальная модель sentence-transformers, префиксы берутся из её карточки.
-    embedding_model: str = "intfloat/multilingual-e5-small"
-    embedding_dim: int = 384
+    embedding_model: str = "intfloat/multilingual-e5-base"
+    embedding_dim: int = 768
     embedding_query_prefix: str = "query: "
     embedding_passage_prefix: str = "passage: "
     embedding_batch_size: int = 32

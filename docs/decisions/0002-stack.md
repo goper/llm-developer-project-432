@@ -14,7 +14,7 @@
   за границей `app/llm/client.py`. OpenAI Agents SDK не подключён: три роли — это три вызова с
   разными промптами, и агентный цикл с инструментами им не нужен; таймаут, повторы и учёт стоимости
   всё равно живут в нашем клиенте.
-- Эмбеддинги локально: sentence-transformers, `intfloat/multilingual-e5-small` (384), torch из CPU-индекса.
+- Эмбеддинги локально: sentence-transformers, `intfloat/multilingual-e5-base` (768; до миграции 0009 была e5-small, 384), torch из CPU-индекса.
 
 ## Слои
 

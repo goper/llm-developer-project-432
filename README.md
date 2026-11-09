@@ -11,7 +11,7 @@
 ## Стек
 
 Python 3.12, FastAPI, Pydantic, PostgreSQL 17 + pgvector, Temporal, локальные эмбеддинги
-sentence-transformers (`intfloat/multilingual-e5-small`), модель по OpenAI-совместимому API
+sentence-transformers (`intfloat/multilingual-e5-base`, 768), модель по OpenAI-совместимому API
 (LM Studio, Ollama или OpenRouter). Зависимости — [uv](https://docs.astral.sh/uv/) и `uv.lock`.
 
 ## Запуск с нуля
@@ -29,7 +29,7 @@ make worker            # в отдельном терминале: воркер 
 make dev               # в отдельном терминале: HTTP API на http://localhost:8000
 ```
 
-Модель эмбеддингов (~470 МБ) скачивается при первом разборе документа и кэшируется в `~/.cache/huggingface`.
+Модель эмбеддингов (~1,1 ГБ) скачивается при первом разборе документа и кэшируется в `~/.cache/huggingface`.
 
 Порты по умолчанию: база **5434**, Temporal **7234**, веб-интерфейс Temporal **http://localhost:8234**.
 Они нарочно не стандартные, чтобы не спорить с другими Postgres и Temporal на машине. Переопределить:

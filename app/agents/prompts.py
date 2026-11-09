@@ -31,6 +31,8 @@ def render_fragments(fragments: list[dict[str, Any]]) -> str:
     lines = []
     for item in fragments:
         meta = f"chunk_id={item['chunk_id']}"
+        if item.get("filename"):
+            meta += f", файл {item['filename']}"
         if item.get("page") is not None:
             meta += f", стр. {item['page']}"
         if item.get("section"):

@@ -26,7 +26,7 @@ def parse_pdf(source: Source) -> list[Unit]:
         raise ParseError(f"не удалось открыть pdf {source_name(source)}: {exc}") from exc
 
     total_chars = sum(len("".join(text.split())) for text, tables in pages) + sum(
-        len("".join(t.split())) for _, tables in pages for t, _ in tables
+        len("".join(t[0].split())) for _, tables in pages for t in tables
     )
     if total_chars < _MIN_TEXT_CHARS:
         raise NoTextLayerError("нет текстового слоя: похоже на скан, распознавание не подключено")
@@ -36,13 +36,13 @@ def parse_pdf(source: Source) -> list[Unit]:
     for number, (text, (_, tables)) in enumerate(zip(texts, pages, strict=True), start=1):
         if text:
             units.append(Unit(text=text, page=number))
-        for table_text, header in tables:
-            units.append(Unit(text=table_text, page=number, kind="table", header=header))
+        for table_text, header, rows in tables:
+            units.append(Unit(text=table_text, page=number, kind="table", header=header, rows=rows))
     return units
 
 
-def _read_page(page) -> tuple[str, list[tuple[str, str | None]]]:
-    """Текст страницы вне таблиц и таблицы страницы в виде (текст, строка заголовков)."""
+def _read_page(page) -> tuple[str, list[tuple[str, str | None, tuple[tuple[str, ...], ...]]]]:
+    """Текст страницы вне таблиц и таблицы страницы: (текст, строка заголовков, строки)."""
     found = page.find_tables()
     boxes = [table.bbox for table in found]
 
@@ -57,7 +57,7 @@ def _read_page(page) -> tuple[str, list[tuple[str, str | None]]]:
         rows = [[normalize_text(cell or "") for cell in row] for row in table.extract()]
         formatted = format_table(rows)
         if formatted is not None:
-            tables.append(formatted)
+            tables.append((*formatted, tuple(tuple(row) for row in rows if any(row))))
     return text or "", tables
 
 

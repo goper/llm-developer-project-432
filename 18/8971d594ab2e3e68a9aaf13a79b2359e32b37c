@@ -1,0 +1,83 @@
+app/services/structured.py
+  s_58d0b9113ca8a9::t_3859913012620a 9,30-33,199-200,206-208,221,223,225-230
+app/rag/context.py
+  s_58d0b9113ca8a9::t_be72d60fe81c14 7-8,11,22,25-38,45,51-65,70-85,93,100,107,109-112
+app/agents/roles.py
+  s_58d0b9113ca8a9::t_eca0bf26d1c1ca 34,39,44
+.env.example
+  s_58d0b9113ca8a9::t_30356c698b022c 23-25
+app/services/pipeline.py
+  s_58d0b9113ca8a9::t_eca0bf26d1c1ca 181-183,188,220-221,230,232
+app/agents/prompts.py
+  s_58d0b9113ca8a9::t_be72d60fe81c14 34-35
+README.md
+  s_58d0b9113ca8a9::t_30356c698b022c 14
+  s_58d0b9113ca8a9::t_6f51acfe17c1a4 32
+docs/decisions/0002-stack.md
+  s_58d0b9113ca8a9::t_30356c698b022c 17
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_eef2730f06dc9c 42,105,114-126
+tests/test_repositories.py
+  s_58d0b9113ca8a9::t_30356c698b022c 11
+app/parsers/types.py
+  s_58d0b9113ca8a9::t_eca0bf26d1c1ca 43-44
+app/parsers/pdf.py
+  s_58d0b9113ca8a9::t_eca0bf26d1c1ca 29,39-40,44-45,60
+app/core/config.py
+  s_58d0b9113ca8a9::t_30356c698b022c 38-39
+app/parsers/docx.py
+  s_58d0b9113ca8a9::t_eca0bf26d1c1ca 71-72
+evals/calibrate.py
+  s_58d0b9113ca8a9::t_6f51acfe17c1a4 1-52
+db/migrations/0009_embedding_768.sql
+  s_58d0b9113ca8a9::t_30356c698b022c 1-7
+app/services/rag_pipeline.py
+  s_58d0b9113ca8a9::t_4f166ba6167e44 157-180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "188971d594ab2e3e68a9aaf13a79b2359e32b37c",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 74,
+          "output_tokens": 46352,
+          "cache_read_tokens": 9968731,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 82953,
+          "assistant_messages": 37,
+          "turns": 0,
+          "ai_wall_ms": 98864,
+          "first_ts": "2026-11-09T07:59:06.293Z",
+          "last_ts": "2026-11-09T08:02:08.846Z",
+          "session_total_output_tokens": 395003
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 15,
+          "result_chars": 35090,
+          "result_input_tokens": 30,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 32915,
+          "call_output_tokens": 17796
+        }
+      ],
+      "accepted_lines": 205,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

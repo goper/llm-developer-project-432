@@ -1,0 +1,337 @@
+app/core/migrate.py
+  s_58d0b9113ca8a9::t_9c1a49a5ee1cef 52-53
+  s_58d0b9113ca8a9::t_76a3f436e2e49c 1-51,54-69
+app/core/config.py
+  s_58d0b9113ca8a9::t_ccb67f8b71a406 17,63
+  s_58d0b9113ca8a9::t_a2fe1d81c2c357 29
+  s_58d0b9113ca8a9::t_2681caf97078cd 44
+  s_58d0b9113ca8a9::t_083575ae29010a 1-16,18-28,30-43,45-62,64-74
+app/rag/context.py
+  s_58d0b9113ca8a9::t_68e7c353d2b0a0 1-84
+app/agents/prompts.py
+  s_58d0b9113ca8a9::t_e27171896c8b80 1-46,49-76,80-114
+  s_58d0b9113ca8a9::t_a2fe1d81c2c357 47-48,77-79
+app/temporal/client.py
+  s_58d0b9113ca8a9::t_eea478fad10df9 1,3,5,7,10-15,17-23
+tests/test_workflows.py
+  s_58d0b9113ca8a9::t_937bb7b2a3afdf 9,106
+  s_58d0b9113ca8a9::t_d1c74745320ec5 1-6,8,10-16,30-54,56-58,60-62,64-66,68-70,72-74,76-81,83-86,88-91,93-105,107-109,116-118,126-133,136,138-144,147,149-155
+  s_58d0b9113ca8a9::t_cfc57eb34d7f91 7,134-135,137,145-146,148
+  s_58d0b9113ca8a9::t_b116592b5cf3ec 17,110-115
+  s_58d0b9113ca8a9::t_635130a08908cd 18-29,55,59,63,67,71,75,82,87,92
+  s_58d0b9113ca8a9::t_b2fafdef0b49f7 119-125
+app/rag/retrieval.py
+  s_58d0b9113ca8a9::t_68e7c353d2b0a0 1-32
+app/repositories/jobs.py
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1-114
+app/guardrails/pii.py
+  s_58d0b9113ca8a9::t_6daa86a41509a1 1-55,80-124,129-158,161-163
+  s_58d0b9113ca8a9::t_f315a4b70f2504 56-79
+  s_58d0b9113ca8a9::t_b14ba9cf512380 125-128
+  s_58d0b9113ca8a9::t_c51ea51517f094 159-160
+app/temporal/worker.py
+  s_58d0b9113ca8a9::t_eea478fad10df9 1-41
+app/temporal/workflows.py
+  s_58d0b9113ca8a9::t_b116592b5cf3ec 111
+  s_58d0b9113ca8a9::t_eea478fad10df9 1-110,112-166
+db/migrations/0001_init.sql
+  s_58d0b9113ca8a9::t_5e7e9e9c7dee5a 1-2,4-8
+app/guardrails/injection.py
+  s_58d0b9113ca8a9::t_c556ae6c6e67bf 1-148
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_87535e3a9852de 1-42,50-117,122-246
+  s_58d0b9113ca8a9::t_f14c9d30178807 43-49
+tests/test_contract.py
+  s_58d0b9113ca8a9::t_307be6d8fa91ce 1-32
+tests/test_parsers.py
+  s_58d0b9113ca8a9::t_d7f1b420a60014 1-2,4-64,66-105,108-135,137-150
+  s_58d0b9113ca8a9::t_45ba5af46353f8 3,65,136
+app/main.py
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1,3-5,7,9-11,14-45
+app/schemas/cards.py
+  s_58d0b9113ca8a9::t_d3003ef2483665 1-52,56-94
+  s_58d0b9113ca8a9::t_f14c9d30178807 53-55
+app/repositories/documents.py
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1-82
+tests/test_guardrails.py
+  s_58d0b9113ca8a9::t_daf9c3626a8bf8 1-87,89-244
+  s_58d0b9113ca8a9::t_7d4f2fbffd515c 88
+tests/test_migrations_and_health.py
+  s_58d0b9113ca8a9::t_fd8a412bc7f85c 6-7,30-39
+  s_58d0b9113ca8a9::t_02248ce2497193 1
+  s_58d0b9113ca8a9::t_cebc4c39bdad70 2-5,8-29
+app/core/db.py
+  s_58d0b9113ca8a9::t_fd8a412bc7f85c 28
+  s_58d0b9113ca8a9::t_76a3f436e2e49c 1,3-5,7-8,10-11,13,15,18-27,29-31,34-50
+app/schemas/jobs.py
+  s_58d0b9113ca8a9::t_d3003ef2483665 1-43
+app/rag/reindex.py
+  s_58d0b9113ca8a9::t_87535e3a9852de 13,15,21
+  s_58d0b9113ca8a9::t_68e7c353d2b0a0 1-12,14,16-20,22-41
+docs/decisions/0003-relevance-threshold.md
+  s_58d0b9113ca8a9::t_2681caf97078cd 1-38
+app/temporal/activities.py
+  s_58d0b9113ca8a9::t_6a61d4f9b77948 1-14,16-19,21-23,25,27-100,104-181
+  s_58d0b9113ca8a9::t_eea478fad10df9 15,26
+  s_58d0b9113ca8a9::t_f14c9d30178807 20,24,101-103
+tests/test_pipeline.py
+  s_58d0b9113ca8a9::t_48089242b22e11 24,34-36,55
+  s_58d0b9113ca8a9::t_307be6d8fa91ce 1-23,25-33,37-54,56-135
+db/migrations/0003_documents.sql
+  s_58d0b9113ca8a9::t_5e7e9e9c7dee5a 1-28
+app/parsers/types.py
+  s_58d0b9113ca8a9::t_ceabcfceb59346 1-36
+.gitignore
+  s_58d0b9113ca8a9::t_a1d79abad1bb76 1-6,8-10,12-13,15-17
+app/llm/client.py
+  s_58d0b9113ca8a9::t_d3003ef2483665 1-16,18-31,38-44,49-125,129-157,165-179,183-204
+  s_58d0b9113ca8a9::t_f14c9d30178807 17,32-37,126-128,158-164,180-182,205-210
+db/migrations/0005_llm_calls.sql
+  s_58d0b9113ca8a9::t_5e7e9e9c7dee5a 1-18
+app/routers/jobs.py
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1-28
+app/routers/health.py
+  s_58d0b9113ca8a9::t_f14c9d30178807 1-29
+app/services/json_utils.py
+  s_58d0b9113ca8a9::t_d3003ef2483665 1,3-47
+app/temporal/payloads.py
+  s_58d0b9113ca8a9::t_b116592b5cf3ec 12
+  s_58d0b9113ca8a9::t_6a61d4f9b77948 1-11,13-78
+evals/metrics.py
+  s_58d0b9113ca8a9::t_865941ab6d4f73 1-77
+evals/run.py
+  s_58d0b9113ca8a9::t_865941ab6d4f73 1-128
+db/migrations/0004_search.sql
+  s_58d0b9113ca8a9::t_5e7e9e9c7dee5a 1-12
+app/routers/documents.py
+  s_58d0b9113ca8a9::t_1a7012e070715b 9-10
+  s_58d0b9113ca8a9::t_678e841b9fa473 41
+  s_58d0b9113ca8a9::t_f14c9d30178807 1-8,11-22,24-30,34,36-40,42-59
+compose.yml
+  s_58d0b9113ca8a9::t_2c7202266c08bf 1-2,7
+  s_58d0b9113ca8a9::t_7a609aadd7b8cd 3-4,12,25
+app/parsers/normalizer.py
+  s_58d0b9113ca8a9::t_45ba5af46353f8 17,20-23,40-44
+  s_58d0b9113ca8a9::t_43d509499c0cad 1-16,18-19,24-39,45-75
+app/repositories/llm_calls.py
+  s_58d0b9113ca8a9::t_a0e2d837100eee 1-94
+tests/test_repositories.py
+  s_58d0b9113ca8a9::t_cebc4c39bdad70 1-45,49-67,71-94,96-110,112-128
+  s_58d0b9113ca8a9::t_48089242b22e11 46-48,68-70,95
+  s_58d0b9113ca8a9::t_fd8a412bc7f85c 111
+Makefile
+  s_58d0b9113ca8a9::t_2c7202266c08bf 1-3,5,7-17,19-20,22-23,25-26,28-29,31-32,34-35,37-38,40-41,43-45,47-49,51-52,54-55,57-58
+app/rag/embedder.py
+  s_58d0b9113ca8a9::t_68e7c353d2b0a0 1-71
+app/core/logging.py
+  s_58d0b9113ca8a9::t_76a3f436e2e49c 1-45
+app/parsers/pdf.py
+  s_58d0b9113ca8a9::t_b8f09884b1db80 1-25
+db/migrations/0002_jobs.sql
+  s_58d0b9113ca8a9::t_5e7e9e9c7dee5a 1-16
+app/guardrails/__init__.py
+  s_58d0b9113ca8a9::t_257f6ef75307b4 1-16
+app/parsers/docx.py
+  s_58d0b9113ca8a9::t_d4bc846b89aac2 1-78
+docs/decisions/0004-two-models.md
+  s_58d0b9113ca8a9::t_2681caf97078cd 1-16
+docs/decisions/0001-migrations.md
+  s_58d0b9113ca8a9::t_2681caf97078cd 3,7-9,13-16,20-23,27-28
+app/routers/cards.py
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1-24
+uv.lock
+  s_58d0b9113ca8a9::t_9ba5b03423c311 1-1155
+app/services/documents.py
+  s_58d0b9113ca8a9::t_2699b9c0b864b6 1,3-5,7-10,12-22,24,26-27,30-31,34-102
+pyproject.toml
+  s_58d0b9113ca8a9::t_0a7163388dddbd 1-15,17-62
+  s_58d0b9113ca8a9::t_3f777952fbedc7 16
+app/routers/generate.py
+  s_58d0b9113ca8a9::t_f14c9d30178807 1-53,60-63
+  s_58d0b9113ca8a9::t_b116592b5cf3ec 54-59
+.env.example
+  s_58d0b9113ca8a9::t_2c7202266c08bf 1-2,5-25,27,30-33
+  s_58d0b9113ca8a9::t_2681caf97078cd 26
+  s_58d0b9113ca8a9::t_7a609aadd7b8cd 3-4,28-29
+tests/conftest.py
+  s_58d0b9113ca8a9::t_307be6d8fa91ce 1-46
+app/parsers/xlsx.py
+  s_58d0b9113ca8a9::t_0c185a86ba5fb2 1-50
+app/parsers/chunker.py
+  s_58d0b9113ca8a9::t_fcab3d6fd53d9e 1-3,5-108,110
+  s_58d0b9113ca8a9::t_ded802507881b9 4
+  s_58d0b9113ca8a9::t_f0962b58731962 109,111
+tests/test_cost.py
+  s_58d0b9113ca8a9::t_307be6d8fa91ce 1-19
+tests/test_evals.py
+  s_58d0b9113ca8a9::t_865941ab6d4f73 1-45
+docs/decisions/0002-stack.md
+  s_58d0b9113ca8a9::t_2681caf97078cd 1-31
+app/llm/cost.py
+  s_58d0b9113ca8a9::t_a626e6a5e0a4a4 1-29
+README.md
+  s_58d0b9113ca8a9::t_4a65919a5d7e5c 6-7,13-15,17,19,24-29,32-44,47-48,50-52,54-57,59-73,79-80,82-87,89,92-100,103-121,123,125-164
+app/services/rag_pipeline.py
+  s_58d0b9113ca8a9::t_2699b9c0b864b6 1-66,68-78
+  s_58d0b9113ca8a9::t_f14c9d30178807 67
+app/services/pipeline.py
+  s_58d0b9113ca8a9::t_f14c9d30178807 85-89,145-148
+  s_58d0b9113ca8a9::t_fadcddd84568ee 1-84,90-144,149-163
+app/routers/workflows.py
+  s_58d0b9113ca8a9::t_e274ef44ddbfca 1-3,5-14,16-41
+  s_58d0b9113ca8a9::t_39262ce97c8582 4,15
+app/services/structured.py
+  s_58d0b9113ca8a9::t_f14c9d30178807 96-98
+  s_58d0b9113ca8a9::t_e27171896c8b80 1-8,10-60,62-85,88-95,99-104,107-166,168-177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "7a8ec38003cbeb6c7d18e52b241c65e6d9b02b6d",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-haiku-5-5",
+          "input_tokens": 574,
+          "output_tokens": 695386,
+          "cache_read_tokens": 45630300,
+          "cache_write_5m_tokens": 503803,
+          "cache_write_1h_tokens": 641225,
+          "assistant_messages": 287,
+          "turns": 3,
+          "ai_wall_ms": 636252,
+          "first_ts": "2026-11-09T05:17:23.270Z",
+          "last_ts": "2026-11-09T05:39:10.275Z",
+          "session_total_output_tokens": 695386
+        },
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 52,
+          "output_tokens": 33126,
+          "cache_read_tokens": 6388626,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 547032,
+          "assistant_messages": 24,
+          "turns": 6,
+          "ai_wall_ms": 92015,
+          "first_ts": "2026-11-09T05:39:45.148Z",
+          "last_ts": "2026-11-09T05:47:04.567Z",
+          "session_total_output_tokens": 33126
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Agent",
+          "model": "claude-haiku-5-5",
+          "calls": 2,
+          "result_chars": 2112,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 8165,
+          "call_output_tokens": 14688
+        },
+        {
+          "tool": "Bash",
+          "model": "claude-haiku-5-5",
+          "calls": 108,
+          "result_chars": 154554,
+          "result_input_tokens": 210,
+          "result_cache_write_5m_tokens": 35256,
+          "result_cache_write_1h_tokens": 449575,
+          "call_output_tokens": 140785
+        },
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 8,
+          "result_chars": 3644,
+          "result_input_tokens": 14,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 8727,
+          "call_output_tokens": 6648
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-haiku-5-5",
+          "calls": 5,
+          "result_chars": 925,
+          "result_input_tokens": 10,
+          "result_cache_write_5m_tokens": 42865,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 2938
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 149,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 522,
+          "call_output_tokens": 454
+        },
+        {
+          "tool": "Read",
+          "model": "claude-haiku-5-5",
+          "calls": 7,
+          "result_chars": 47975,
+          "result_input_tokens": 14,
+          "result_cache_write_5m_tokens": 4193,
+          "result_cache_write_1h_tokens": 21073,
+          "call_output_tokens": 5068
+        },
+        {
+          "tool": "SubagentHandback",
+          "model": "claude-haiku-5-5",
+          "calls": 2,
+          "result_chars": 122,
+          "result_input_tokens": 0,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 3727
+        },
+        {
+          "tool": "TaskStop",
+          "model": "claude-haiku-5-5",
+          "calls": 1,
+          "result_chars": 2787,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 419,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 551
+        },
+        {
+          "tool": "Write",
+          "model": "claude-haiku-5-5",
+          "calls": 14,
+          "result_chars": 2468,
+          "result_input_tokens": 28,
+          "result_cache_write_5m_tokens": 59966,
+          "result_cache_write_1h_tokens": 9768,
+          "call_output_tokens": 182355
+        },
+        {
+          "tool": "Write",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 172,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 4307,
+          "call_output_tokens": 4244
+        }
+      ],
+      "context_at_start_tokens": 47713,
+      "overridden_lines": 14
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

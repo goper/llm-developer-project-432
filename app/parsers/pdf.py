@@ -23,3 +23,7 @@ def parse_pdf(path: Path) -> list[Unit]:
 
     pages = strip_running_lines([normalize_text(page) for page in raw_pages])
     return [Unit(text=text, page=number) for number, text in enumerate(pages, start=1) if text]
+
+
+# Имя из практики темы: pdf без текстового слоя.
+PdfNoTextLayer = NoTextLayerError

@@ -166,3 +166,8 @@ def mask_pii(text: str) -> MaskResult:
 def _inn_checksum(value: str) -> bool:
     """Проверка контрольной суммы ИНН (10 или 12 цифр). Имя из практики темы."""
     return _inn_ok(value)
+
+
+def contains_pii(text: str) -> bool:
+    """Есть ли в тексте персональные данные (телефон, почта, ИНН, карта)."""
+    return bool(mask_pii(text).findings)

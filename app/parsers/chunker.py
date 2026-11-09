@@ -109,3 +109,8 @@ def _make_chunk(
     text: str, page: int | None, section: str | None, kind: Literal["text", "row"], sku: str | None
 ) -> Chunk:
     return Chunk(text=text, position=0, page=page, section=section, kind=kind, sku=sku)
+
+
+def chunk_blocks(blocks: list[Unit], *, size: int = 800, overlap: int = 120) -> list[Chunk]:
+    """Резка структурных блоков документа на фрагменты (то же, что chunk_units)."""
+    return chunk_units(blocks, size=size, overlap=overlap)

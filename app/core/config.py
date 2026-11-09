@@ -72,3 +72,7 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+# Готовый объект настроек для модулей, которым удобнее импорт `from app.core.config import settings`.
+settings = get_settings()

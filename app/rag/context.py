@@ -82,3 +82,12 @@ def build_context(hits: list[ChunkHit], *, max_chars: int) -> Context:
         "masked": masked_kinds,
     }
     return Context(items=items, report=report)
+
+
+def context_chunk_ids(context: "Context | str") -> set[str]:
+    """Идентификаторы фрагментов, поданных в контекст. Принимает Context или его текст."""
+    if isinstance(context, Context):
+        return set(context.allowed_ids)
+    import re
+
+    return set(re.findall(r"chunk_id=([^,\]\s]+)", context))

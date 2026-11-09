@@ -92,3 +92,9 @@ class Verdict(BaseModel):
         if self.ok and self.issues:
             raise ValueError("ok=true, но перечислены проблемы; верни ok=false или очисти issues")
         return self
+
+
+# Имена из практики темы: черновик карточки, отчёт проверяющей роли, факты поставщика.
+CardDraft = Card
+CritiqueReport = Verdict
+SupplierFacts = Facts

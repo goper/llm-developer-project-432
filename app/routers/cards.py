@@ -16,7 +16,7 @@ router = APIRouter(tags=["cards"])
 def create_card(body: CardTextRequest) -> Card:
     ctx = text_context(body.text)
     try:
-        outcome = pipeline.run_pipeline(get_llm_client(), ctx, body.product_hint, job_id=None)
+        outcome = pipeline.run_card_pipeline(get_llm_client(), ctx, body.product_hint, job_id=None)
     except (LLMUnavailableError, LLMRequestError) as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except StructuredError as exc:

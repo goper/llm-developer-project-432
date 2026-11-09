@@ -1,5 +1,6 @@
 """Нарезка единиц текста на фрагменты для индексации."""
 
+import hashlib
 from dataclasses import replace
 from typing import Literal
 
@@ -93,6 +94,16 @@ def _make_chunk(
     return Chunk(text=text, position=0, page=page, section=section, kind=kind, sku=sku)
 
 
-def chunk_blocks(blocks: list[Unit], *, size: int = 800, overlap: int = 120) -> list[Chunk]:
-    """Резка структурных блоков документа на фрагменты (то же, что chunk_units)."""
-    return chunk_units(blocks, size=size, overlap=overlap)
+def chunk_id_for(doc_id: str, position: int) -> str:
+    """Устойчивый идентификатор фрагмента: тот же документ и позиция дают тот же id."""
+    return hashlib.sha1(f"{doc_id}:{position}".encode()).hexdigest()[:12]
+
+
+def chunk_blocks(
+    blocks: list[Unit], doc_id: str | None = None, *, size: int = 800, overlap: int = 120
+) -> list[Chunk]:
+    """Резка структурных блоков документа на фрагменты; с doc_id у фрагментов заполнены doc_id и chunk_id."""
+    chunks = chunk_units(blocks, size=size, overlap=overlap)
+    if doc_id is None:
+        return chunks
+    return [replace(c, doc_id=doc_id, chunk_id=chunk_id_for(doc_id, c.position)) for c in chunks]

@@ -69,3 +69,13 @@ def get_embedder() -> Embedder:
         query_prefix=s.embedding_query_prefix,
         batch_size=s.embedding_batch_size,
     )
+
+
+def embed_query(text: str) -> list[float]:
+    """Вектор поискового запроса (с префиксом query:) общей моделью процесса."""
+    return get_embedder().embed_query(text)
+
+
+def embed_passages(texts: list[str]) -> list[list[float]]:
+    """Векторы фрагментов (с префиксом passage:) общей моделью процесса."""
+    return get_embedder().embed_passages(texts)

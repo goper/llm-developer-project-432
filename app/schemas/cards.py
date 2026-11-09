@@ -4,9 +4,9 @@
 Ответ модели проверяется этими классами до того, как с ним что-то делается.
 """
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.config import get_settings
 
@@ -37,7 +37,8 @@ class Card(BaseModel):
     seo: Seo = Field(default_factory=Seo)
     sources: list[SourceRef] = Field(default_factory=list)
     missing_fields: list[str] = Field(default_factory=list)
-    confidence: float = Field(ge=0.0, le=1.0)
+    # Без явной оценки уверенность нулевая: такая карточка не пройдёт порог и уйдёт человеку.
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
     @field_validator("title")
     @classmethod
@@ -73,7 +74,12 @@ class Fact(BaseModel):
 
 
 class Facts(BaseModel):
-    """Результат роли «извлечение»: факты из фрагментов со ссылками."""
+    """Результат роли «извлечение»: факты из фрагментов со ссылками.
+
+    Лишние поля (бренд, модель, характеристики плоско) сохраняются как есть.
+    """
+
+    model_config = ConfigDict(extra="allow")
 
     items: list[Fact] = Field(default_factory=list)
 
@@ -96,7 +102,17 @@ class Verdict(BaseModel):
         return self
 
 
-# Имена из практики темы: черновик карточки, отчёт проверяющей роли, факты поставщика.
+class CritiqueReport(BaseModel):
+    """Отчёт проверяющего агента: принять черновик или сгенерировать заново, и почему."""
+
+    verdict: Literal["approve", "regenerate"]
+    issues: list[str] = Field(default_factory=list)
+
+    @property
+    def approved(self) -> bool:
+        return self.verdict == "approve"
+
+
+# Имена из практики темы: черновик карточки и факты поставщика.
 CardDraft = Card
-CritiqueReport = Verdict
 SupplierFacts = Facts

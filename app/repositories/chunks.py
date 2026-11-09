@@ -39,6 +39,39 @@ class ChunkHit:
     brand: str | None
     score: float
 
+    @property
+    def chunk_id(self) -> str:
+        return self.id
+
+    @property
+    def doc_id(self) -> str:
+        return self.document_id
+
+    def __getitem__(self, key: str) -> Any:
+        """Результат поиска читается и как словарь: hit["chunk_id"], hit["score"], hit["metadata"]."""
+        if key == "metadata":
+            return self.metadata()
+        if key in (
+            "id",
+            "chunk_id",
+            "doc_id",
+            "document_id",
+            "text",
+            "page",
+            "section",
+            "sku",
+            "brand",
+            "score",
+        ):
+            return getattr(self, key)
+        raise KeyError(key)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
     def metadata(self) -> dict[str, Any]:
         return {
             "document_id": self.document_id,

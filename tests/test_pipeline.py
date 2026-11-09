@@ -58,7 +58,7 @@ def _json(obj) -> str:
 
 def test_success_goes_to_waiting_approval() -> None:
     llm = FakeLLM({"extract": [_json(FACTS)], "generate": [_json(GOOD_CARD)], "check": [_json(OK_VERDICT)]})
-    out = pipeline.run_pipeline(llm, CONTEXT, "блендер", job_id=None)
+    out = pipeline.run_card_pipeline(llm, CONTEXT, "блендер", job_id=None)
     assert out.status == "waiting_approval"
     assert out.rounds == 0
     assert out.card.characteristics == {"мощность": "800 Вт"}
@@ -67,7 +67,7 @@ def test_success_goes_to_waiting_approval() -> None:
 def test_low_confidence_goes_to_review() -> None:
     card = {**GOOD_CARD, "confidence": 0.3}
     llm = FakeLLM({"extract": [_json(FACTS)], "generate": [_json(card)], "check": [_json(OK_VERDICT)]})
-    out = pipeline.run_pipeline(llm, CONTEXT, None, job_id=None)
+    out = pipeline.run_card_pipeline(llm, CONTEXT, None, job_id=None)
     assert out.status == "needs_review"
 
 
@@ -81,7 +81,7 @@ def test_long_title_is_repaired_point_wise() -> None:
             "check": [_json(OK_VERDICT)],
         }
     )
-    out = pipeline.run_pipeline(llm, CONTEXT, None, job_id=None)
+    out = pipeline.run_card_pipeline(llm, CONTEXT, None, job_id=None)
     assert out.card.title == "Блендер 800 Вт"
     assert out.card.description == GOOD_CARD["description"]
     assert llm.calls.count("repair_field") == 1
@@ -97,7 +97,7 @@ def test_fabricated_link_triggers_repair_then_loop_is_bounded() -> None:
             "check": [_json(OK_VERDICT)],
         }
     )
-    out = pipeline.run_pipeline(llm, CONTEXT, None, job_id=None)
+    out = pipeline.run_card_pipeline(llm, CONTEXT, None, job_id=None)
     assert out.status == "needs_review"
     assert out.rounds == get_settings().max_repair_rounds
     assert llm.calls.count("repair_field") == get_settings().max_repair_rounds

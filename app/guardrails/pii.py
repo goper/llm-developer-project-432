@@ -15,7 +15,7 @@ _PHONE_SEP = r"[\s\-().]"
 @dataclass(frozen=True)
 class PiiFinding:
     kind: str  # "phone" | "email" | "inn" | "card"
-    label: str  # например "телефон номер один"
+    label: str  # например "[PHONE_1]"
 
 
 @dataclass(frozen=True)
@@ -29,72 +29,10 @@ class MaskResult:
         yield list(self.findings)
 
 
-_KIND_WORDS = {"phone": "телефон", "email": "почта", "card": "карта", "inn": "инн"}
-
 _PHONE_RE = re.compile(rf"(?<!\d)(?:\+7|8)(?:{_PHONE_SEP}*\d){{10}}(?!\d)")
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
 _CARD_RE = re.compile(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)")
 _INN_RE = re.compile(r"(?<!\d)(?:\d{10}|\d{12})(?!\d)")
-
-_ONES = (
-    "ноль",
-    "один",
-    "два",
-    "три",
-    "четыре",
-    "пять",
-    "шесть",
-    "семь",
-    "восемь",
-    "девять",
-    "десять",
-    "одиннадцать",
-    "двенадцать",
-    "тринадцать",
-    "четырнадцать",
-    "пятнадцать",
-    "шестнадцать",
-    "семнадцать",
-    "восемнадцать",
-    "девятнадцать",
-)
-_TENS = (
-    "",
-    "",
-    "двадцать",
-    "тридцать",
-    "сорок",
-    "пятьдесят",
-    "шестьдесят",
-    "семьдесят",
-    "восемьдесят",
-    "девяносто",
-)
-_HUNDREDS = (
-    "",
-    "сто",
-    "двести",
-    "триста",
-    "четыреста",
-    "пятьсот",
-    "шестьсот",
-    "семьсот",
-    "восемьсот",
-    "девятьсот",
-)
-
-
-def _ru_number(n: int) -> str:
-    """Число словами (до 999), для меток вида «номер два»."""
-    if n >= 1000:
-        return str(n)
-    if n < 20:
-        return _ONES[n]
-    if n < 100:
-        tens, ones = divmod(n, 10)
-        return _TENS[tens] + (f" {_ONES[ones]}" if ones else "")
-    hundreds, rest = divmod(n, 100)
-    return _HUNDREDS[hundreds] + (f" {_ru_number(rest)}" if rest else "")
 
 
 def _luhn_ok(value: str) -> bool:
@@ -147,7 +85,7 @@ def _mask_kind(
         if not is_valid(value):
             return value
         counter += 1
-        label = f"{_KIND_WORDS[kind]} номер {_ru_number(counter)}"
+        label = f"[{kind.upper()}_{counter}]"
         findings.append(PiiFinding(kind=kind, label=label))
         return label
 

@@ -11,10 +11,13 @@ from typing import Any
 from pydantic import ValidationError
 
 from app.agents.prompts import check_messages, extract_messages, generate_messages
+from app.agents.roles import critic_agent, extract_agent, generate_agent
 from app.core.config import get_settings
-from app.llm.client import run_agent  # noqa: F401  (извлечение и проверка зовут агентов через него)
+from app.llm.client import run_agent
 from app.rag.context import Context
-from app.schemas.cards import Card, Facts, Issue, Verdict
+from app.schemas.cards import Card, CritiqueReport, Facts, Issue, SupplierFacts, Verdict
+from app.services import structured
+from app.services.json_utils import parse_json_reply
 from app.services.structured import ChatLike, generate_model, repair_fields
 
 STATUS_WAITING = "waiting_approval"
@@ -114,7 +117,7 @@ def _group(problems: list[Issue]) -> dict[str, str]:
     return {k: "; ".join(v) for k, v in grouped.items()}
 
 
-def run_pipeline(
+def run_card_pipeline(
     llm: ChatLike,
     context: Context,
     product_hint: str | None,
@@ -162,3 +165,65 @@ def card_fallback(draft: dict[str, Any], previous: Card) -> Card:
 
 def _as_dict(card: Card) -> dict[str, Any]:
     return json.loads(card.model_dump_json())
+
+
+# --- Асинхронный путь через агентов ролей: текст поставщика -> факты -> черновик -> проверка. ---
+# Извлечение и проверка зовут run_agent напрямую, генерация — через structured.validate_or_retry
+# (там лечение невалидного ответа). Петля «проверка -> генерация заново» ограничена.
+
+
+@dataclass
+class PipelineResult:
+    card: Card
+    status: str  # done | needs_review
+    attempts: int
+    issues: list[str] = field(default_factory=list)
+    facts: SupplierFacts | None = None
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
+
+
+async def extract(text: str) -> SupplierFacts:
+    """Факты поставщика из текста. Ответ в markdown-ограде (```json ... ```) тоже разбирается."""
+    raw = await run_agent(extract_agent(), f"ТЕКСТ ПОСТАВЩИКА:\n{text}")
+    return SupplierFacts.model_validate(parse_json_reply(raw))
+
+
+async def generate(facts: SupplierFacts, text: str = "", feedback: list[str] | None = None) -> Card:
+    prompt = f"ФАКТЫ:\n{facts.model_dump_json()}"
+    if text:
+        prompt += f"\n\nТЕКСТ ПОСТАВЩИКА:\n{text}"
+    if feedback:
+        prompt += "\n\nЗАМЕЧАНИЯ ПРОВЕРКИ, их нужно учесть:\n" + "\n".join(f"- {i}" for i in feedback)
+    return await structured.validate_or_retry(prompt, generate_agent(), Card)
+
+
+async def critique(card: Card, facts: SupplierFacts, text: str = "") -> CritiqueReport:
+    prompt = f"ЧЕРНОВИК:\n{card.model_dump_json()}\n\nФАКТЫ:\n{facts.model_dump_json()}"
+    if text:
+        prompt += f"\n\nТЕКСТ ПОСТАВЩИКА:\n{text}"
+    raw = await run_agent(critic_agent(), prompt)
+    return CritiqueReport.model_validate(parse_json_reply(raw))
+
+
+async def run_pipeline(text: str, *, max_attempts: int | None = None) -> PipelineResult:
+    """Извлечение, затем до max_attempts кругов «генерация -> проверка».
+
+    Проверка приняла черновик — done. Круги кончились — needs_review с последними замечаниями.
+    """
+    attempts = max_attempts or get_settings().max_repair_rounds
+    facts = await extract(text)
+    issues: list[str] = []
+    card: Card | None = None
+    for attempt in range(1, attempts + 1):
+        card = await generate(facts, text, issues or None)
+        report = await critique(card, facts, text)
+        if report.verdict == "approve":
+            return PipelineResult(card, "done", attempt, [], facts)
+        issues = list(report.issues)
+    assert card is not None
+    return PipelineResult(card, "needs_review", attempts, issues, facts)
+
+
+run = run_pipeline

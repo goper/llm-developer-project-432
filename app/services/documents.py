@@ -6,11 +6,11 @@
 
 import hashlib
 import logging
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 
 from app.core.config import get_settings
-from app.parsers.chunker import chunk_units
+from app.parsers.chunker import chunk_blocks, chunk_id_for
 from app.parsers.docx import parse_docx
 from app.parsers.pdf import parse_pdf
 from app.parsers.types import Chunk, ParseError, Source, Unit
@@ -60,7 +60,7 @@ def source_path(doc: Document) -> Path:
 
 
 def _chunk_id(document_id: str, position: int) -> str:
-    return hashlib.sha1(f"{document_id}:{position}".encode()).hexdigest()[:12]
+    return chunk_id_for(document_id, position)
 
 
 def parse_to_chunks(
@@ -86,14 +86,12 @@ def parse_to_chunks(
     units: list[Unit] = PARSERS[kind](source)
     if not units:
         raise ParseError("в документе не нашлось текста")
-    chunks = chunk_units(
+    return chunk_blocks(
         units,
+        doc_id,
         size=size or settings.chunk_size,
         overlap=settings.chunk_overlap if overlap is None else overlap,
     )
-    if doc_id is None:
-        return chunks
-    return [replace(c, doc_id=doc_id, chunk_id=_chunk_id(doc_id, c.position)) for c in chunks]
 
 
 def parse_document(doc_id: str) -> str:

@@ -22,6 +22,10 @@ class StructuredError(Exception):
     """Модель не дала валидный ответ за отведённое число попыток."""
 
 
+class CardValidationError(StructuredError):
+    """Асинхронный путь: ответ агента так и не прошёл схему после всех исправлений."""
+
+
 class ChatReply(Protocol):
     text: str
 
@@ -182,21 +186,25 @@ def repair_fields[T: BaseModel](
 
 
 async def validate_or_retry[T: BaseModel](
-    agent: Any,
     prompt: str,
+    agent: Any | None = None,
     model_cls: type[T] | None = None,
     *,
     max_attempts: int | None = None,
 ) -> T:
     """Ответ агента проверяется схемой; ошибка проверки уходит обратно агенту.
 
-    Всего max_attempts попыток (по умолчанию 3: первая и два исправления). Если все мимо —
-    поднимается последняя ошибка проверки: невалидный ответ дальше не идёт.
+    По умолчанию агент генерации и схема CardDraft. Всего max_attempts попыток (по умолчанию 3:
+    первая и два исправления). Если все мимо — CardValidationError: невалидный ответ дальше не идёт.
     """
     if model_cls is None:
         from app.schemas.cards import CardDraft
 
         model_cls = CardDraft  # type: ignore[assignment]
+    if agent is None:
+        from app.agents.roles import generate_agent
+
+        agent = generate_agent()
     attempts = max_attempts or get_settings().max_structured_attempts
     current = prompt
     last_error: Exception | None = None
@@ -211,8 +219,9 @@ async def validate_or_retry[T: BaseModel](
                 f"{prompt}\n\nТвой прошлый ответ не прошёл проверку: {_describe(exc)}\n"
                 "Исправь ошибки и верни JSON целиком, без пояснений."
             )
-    assert last_error is not None
-    raise last_error
+    raise CardValidationError(
+        f"ответ не прошёл проверку за {attempts} попыток: {_describe(last_error)}"
+    ) from last_error
 
 
 async def regenerate_field[T: BaseModel](
@@ -241,4 +250,4 @@ def confidence_gate(card: Any, threshold: float | None = None) -> str:
     """Низкая уверенность — карточку ждёт человек (needs_review), иначе — обычное подтверждение."""
     limit = get_settings().confidence_threshold if threshold is None else threshold
     confidence = card.get("confidence", 0) if isinstance(card, dict) else getattr(card, "confidence", 0)
-    return "needs_review" if float(confidence or 0) < limit else "waiting_approval"
+    return "needs_review" if float(confidence or 0) < limit else "done"

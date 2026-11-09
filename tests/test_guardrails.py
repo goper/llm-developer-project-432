@@ -49,23 +49,23 @@ def _read_docx(name: str) -> str:
 )
 def test_phone_is_masked(raw: str) -> None:
     result = mask_pii(f"Звоните: {raw}, спасибо")
-    assert result.text == "Звоните: телефон номер один, спасибо"
+    assert result.text == "Звоните: [PHONE_1], спасибо"
     assert [f.kind for f in result.findings] == ["phone"]
 
 
 def test_two_phones_are_numbered_in_order() -> None:
     result = mask_pii("+7 926 555-14-08 и 8 (912) 345-67-89")
-    assert result.text == "телефон номер один и телефон номер два"
+    assert result.text == "[PHONE_1] и [PHONE_2]"
 
 
 def test_email_is_masked() -> None:
     result = mask_pii("Пишите: a.smirnova@technodom.example")
-    assert result.text == "Пишите: почта номер один"
+    assert result.text == "Пишите: [EMAIL_1]"
 
 
 def test_valid_inn_is_masked() -> None:
     result = mask_pii("ИНН компании: 7712345671")
-    assert result.text == "ИНН компании: инн номер один"
+    assert result.text == "ИНН компании: [INN_1]"
 
 
 def test_invalid_inn_is_untouched() -> None:
@@ -84,7 +84,7 @@ def test_articles_prices_and_dates_are_untouched() -> None:
 
 def test_card_with_valid_luhn_is_masked() -> None:
     result = mask_pii("Карта 4111 1111 1111 1111")
-    assert result.text == "Карта карта номер один"
+    assert result.text == "Карта [CARD_1]"
     assert "4111" not in result.text
     assert [f.kind for f in result.findings] == ["card"]
 
@@ -108,7 +108,7 @@ def test_findings_do_not_contain_raw_values() -> None:
     dumped = repr(result.findings)
     for value in raw_values:
         assert value not in dumped
-    assert all(f.label.startswith(("телефон", "почта", "инн", "карта")) for f in result.findings)
+    assert [f.label for f in result.findings] == ["[PHONE_1]", "[EMAIL_1]", "[CARD_1]", "[INN_1]"]
 
 
 # --- check_rules ---
@@ -232,7 +232,7 @@ def test_kp_pii_is_masked() -> None:
 
 def test_check_output_reports_phone() -> None:
     issues = check_output("Звоните +7 926 555-14-08")
-    assert issues == ["персональные данные: телефон номер один"]
+    assert issues == ["персональные данные: [PHONE_1]"]
 
 
 def test_check_output_reports_instruction_trace() -> None:

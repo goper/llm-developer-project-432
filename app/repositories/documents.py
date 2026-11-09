@@ -20,7 +20,7 @@ class Document:
 
 
 _COLUMNS = """
-    d.id, d.sha256, d.filename, d.size_bytes, d.status, d.error,
+    d.id, d.content_hash AS sha256, d.filename, d.size_bytes, d.status, d.error,
     (SELECT count(*) FROM chunks c WHERE c.doc_id = d.id) AS chunks_count
 """
 
@@ -46,16 +46,22 @@ def create_or_get(*, sha256: str, filename: str, size_bytes: int) -> tuple[Docum
     with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
         cur.execute(
             """
-            INSERT INTO documents (id, sha256, filename, size_bytes, status)
-            VALUES (%s, %s, %s, %s, 'new')
-            ON CONFLICT (sha256) DO NOTHING
+            INSERT INTO documents (id, content_hash, filename, kind, size_bytes, status)
+            VALUES (%s, %s, %s, %s, %s, 'new')
+            ON CONFLICT (content_hash) DO NOTHING
             RETURNING id
             """,
-            (doc_id, sha256, filename, size_bytes),
+            (
+                doc_id,
+                sha256,
+                filename,
+                filename.rsplit(".", 1)[-1].lower() if "." in filename else None,
+                size_bytes,
+            ),
         )
         created = cur.fetchone() is not None
         cur.execute(
-            f"SELECT {_COLUMNS} FROM documents d WHERE d.sha256 = %s",
+            f"SELECT {_COLUMNS} FROM documents d WHERE d.content_hash = %s",
             (sha256,),
         )
         return _row(cur.fetchone()), created

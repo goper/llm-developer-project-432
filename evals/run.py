@@ -43,7 +43,7 @@ def evaluate_document(name: str, expected: dict[str, Any], llm: Any) -> dict[str
     job_id = f"eval-{name}"
     hits = rag_pipeline.search_step(expected["product"], [doc_id])
     context = rag_pipeline.assemble_context(hits, llm, job_id=job_id)
-    outcome = pipeline.run_pipeline(llm, context, expected["product"], job_id=job_id)
+    outcome = pipeline.run_card_pipeline(llm, context, expected["product"], job_id=job_id)
     card = outcome.card.model_dump()
 
     matched, total = characteristic_match(expected.get("characteristics", {}), card["characteristics"])

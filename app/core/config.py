@@ -73,6 +73,16 @@ class Settings(BaseSettings):
         """Адрес Temporal вида host:port (то же, что temporal_address)."""
         return self.temporal_address
 
+    @property
+    def embed_dim(self) -> int:
+        """Размерность вектора (то же, что embedding_dim)."""
+        return self.embedding_dim
+
+    @property
+    def suspicious_chunk_limit(self) -> int:
+        """Порог подозрительных фрагментов до needs_review (= injection_suspicious_limit)."""
+        return self.injection_suspicious_limit
+
 
 @lru_cache
 def get_settings() -> Settings:

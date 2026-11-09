@@ -41,6 +41,11 @@ class Unit:
     header: str | None = None
     sku: str | None = None
 
+    @property
+    def content(self) -> str:
+        """Текст блока (то же, что text)."""
+        return self.text
+
 
 @dataclass(frozen=True)
 class Chunk:
@@ -54,6 +59,18 @@ class Chunk:
     sku: str | None
     doc_id: str | None = None
     chunk_id: str | None = None
+
+    def __getitem__(self, key: str) -> object:
+        """Фрагмент читается и как словарь: chunk["text"], chunk["metadata"]["page"]."""
+        if key in ("text", "chunk_id", "doc_id", "metadata", "position", "page", "section", "kind", "sku"):
+            return getattr(self, key)
+        raise KeyError(key)
+
+    def get(self, key: str, default: object = None) -> object:
+        try:
+            return self[key]
+        except KeyError:
+            return default
 
     @property
     def metadata(self) -> dict[str, object]:

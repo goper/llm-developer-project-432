@@ -2,9 +2,10 @@
 UV ?= uv
 export UV_PROJECT_ENVIRONMENT ?= .venv
 
-.PHONY: help install up down logs migrate dev worker test lint lint-fix reindex eval clean-volumes
+.PHONY: help setup install up down logs migrate dev worker test lint lint-fix reindex eval clean-volumes
 
 help:
+	@echo "setup         подготовка: зависимости; миграции, если задан DATABASE_URL"
 	@echo "install       зависимости из uv.lock"
 	@echo "up / down     база с pgvector и Temporal (docker compose)"
 	@echo "migrate       SQL-миграции из db/migrations"
@@ -15,6 +16,10 @@ help:
 	@echo "reindex       досчитать векторы фрагментам без них"
 	@echo "eval          метрики на эталоне; FULL=1 — весь набор"
 	@echo "clean-volumes удалить тома (полный сброс состояния)"
+
+# Подготовка окружения (её же вызывает автопроверка Хекслета). Миграции — только если адрес базы задан явно.
+setup: install
+	@if [ -n "$$DATABASE_URL" ]; then $(UV) run python -m app.core.migrate; else echo "DATABASE_URL не задан: миграции пропущены (make migrate)"; fi
 
 install:
 	$(UV) sync --frozen

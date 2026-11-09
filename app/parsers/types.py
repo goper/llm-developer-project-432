@@ -37,7 +37,7 @@ class Unit:
     text: str
     page: int | None = None
     section: str | None = None
-    kind: Literal["text", "row"] = "text"
+    kind: Literal["text", "row", "table"] = "text"
     header: str | None = None
     sku: str | None = None
 
@@ -55,7 +55,7 @@ class Chunk:
     position: int
     page: int | None
     section: str | None
-    kind: Literal["text", "row"]
+    kind: Literal["text", "row", "table"]
     sku: str | None
     doc_id: str | None = None
     chunk_id: str | None = None
@@ -83,4 +83,5 @@ class Chunk:
             "section": self.section,
             "kind": self.kind,
             "sku": self.sku,
+            "articul": self.sku,
         }

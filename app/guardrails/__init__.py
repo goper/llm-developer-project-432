@@ -55,6 +55,11 @@ class GuardReport:
         return self.suspicious_chunks
 
     @property
+    def masked_pii(self) -> int:
+        """Сколько значений ПДн замаскировано всего."""
+        return sum(self.masked.values())
+
+    @property
     def needs_review(self) -> bool:
         """Подозрительных фрагментов больше порога — документ уходит к человеку."""
         from app.core.config import get_settings

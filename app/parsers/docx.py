@@ -10,12 +10,12 @@ from docx.oxml.ns import qn
 from docx.table import Table
 from docx.text.paragraph import Paragraph
 
-from app.parsers.normalizer import format_row, normalize_text
+from app.parsers.normalizer import format_table, normalize_text
 from app.parsers.types import ParseError, Source, Unit, open_source, source_name
 
 
 def parse_docx(source: Source) -> list[Unit]:
-    """Вернуть текстовые единицы по секциям и строки таблиц (kind="row") в порядке документа."""
+    """Вернуть текстовые единицы по секциям и таблицы (kind="table") в порядке документа."""
     try:
         document = docx.Document(open_source(source))
     except (PackageNotFoundError, zipfile.BadZipFile, OSError) as exc:
@@ -62,16 +62,10 @@ def _flush(units: list[Unit], lines: list[str], section: str | None) -> None:
 
 
 def _table_units(table: Table, section: str | None) -> list[Unit]:
-    """Строки таблицы; первая строка таблицы — заголовки колонок."""
+    """Таблица целиком одним блоком kind="table"; первая строка таблицы — заголовки колонок."""
     rows = [[normalize_text(cell.text) for cell in row.cells] for row in table.rows]
-    if not rows:
+    formatted = format_table(rows)
+    if formatted is None:
         return []
-    headers: list[str | None] = [value or None for value in rows[0]]
-    header_line = "; ".join(header for header in headers if header) or None
-
-    units = []
-    for values in rows[1:]:
-        text, sku = format_row(values, headers)
-        if text:
-            units.append(Unit(text=text, section=section, kind="row", header=header_line, sku=sku))
-    return units
+    text, header_line = formatted
+    return [Unit(text=text, section=section, kind="table", header=header_line)]

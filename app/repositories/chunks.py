@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 
 from app.core.db import connection
 
@@ -82,7 +83,12 @@ class ChunkHit:
         }
 
 
-_FIELDS = "c.id, c.doc_id, c.text, c.page, c.section, c.sku, c.brand"
+_FIELDS = (
+    "c.id, c.doc_id, c.text, "
+    "coalesce(c.page, (c.metadata->>'page')::int) AS page, "
+    "coalesce(c.section, c.metadata->>'section') AS section, "
+    "coalesce(c.sku, c.metadata->>'articul') AS sku, c.brand"
+)
 
 
 def _hit(row: dict[str, Any], score: float) -> ChunkHit:
@@ -98,17 +104,33 @@ def _hit(row: dict[str, Any], score: float) -> ChunkHit:
     )
 
 
+def _metadata(document_id: str, c: ChunkRow) -> dict[str, Any]:
+    meta = {"doc_id": document_id, "page": c.page, "section": c.section, "kind": c.kind, "articul": c.sku}
+    return {k: v for k, v in meta.items() if v is not None}
+
+
 def replace_chunks(document_id: str, chunks: list[ChunkRow]) -> int:
     """Заменяет все фрагменты документа новыми. Повторный разбор даёт те же строки, без дублей."""
     with connection() as conn, conn.cursor() as cur:
         cur.execute("DELETE FROM chunks WHERE doc_id = %s", (document_id,))
         cur.executemany(
             """
-            INSERT INTO chunks (id, doc_id, position, page, section, kind, sku, brand, text)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO chunks (id, doc_id, ordinal, page, section, kind, sku, brand, text, metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             [
-                (c.id, document_id, c.position, c.page, c.section, c.kind, c.sku, c.brand, c.text)
+                (
+                    c.id,
+                    document_id,
+                    c.position,
+                    c.page,
+                    c.section,
+                    c.kind,
+                    c.sku,
+                    c.brand,
+                    c.text,
+                    Jsonb(_metadata(document_id, c)),
+                )
                 for c in chunks
             ],
         )
@@ -138,7 +160,7 @@ def list_without_embedding(limit: int, document_id: str | None = None) -> list[t
             """
             SELECT id, text, sku FROM chunks
             WHERE embedding IS NULL AND (%s::text IS NULL OR doc_id = %s::text)
-            ORDER BY doc_id, position LIMIT %s
+            ORDER BY doc_id, ordinal LIMIT %s
             """,
             (document_id, document_id, limit),
         )

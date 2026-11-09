@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     max_structured_attempts: int = 3  # лечение невалидного ответа модели
     confidence_threshold: float = 0.7  # ниже порога карточка ждёт человека
     title_max_length: int = 60
-    injection_suspicious_limit: int = 3  # сколько подозрительных фрагментов — документ к человеку
+    injection_suspicious_limit: int = 2  # больше стольких подозрительных фрагментов — к человеку
 
     # Temporal: движок устойчивых процессов.
     temporal_address: str = Field(default="localhost:7234")

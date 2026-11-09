@@ -49,14 +49,28 @@ def test_kettle_spec_xlsx_rows_with_headers():
     assert "Мощность, Вт 2200" in row.text
 
 
-def test_blender_kp_docx_table_rows():
+def test_blender_kp_docx_table_is_one_block():
     units = parse_docx(DATA / "blender_kp.docx")
 
-    row = next(unit for unit in units if "BLD-800" in unit.text)
-    assert row.kind == "row"
-    assert row.sku == "BLD-800"
-    assert "2 190" in row.text
-    assert row.section == "Прайс-лист (опт)"
+    tables = [unit for unit in units if unit.kind == "table"]
+    assert len(tables) == 1
+    table = tables[0]
+    assert table.section == "Прайс-лист (опт)"
+    lines = table.text.split("\n")
+    row = next(line for line in lines if "BLD-800" in line)
+    assert row.startswith("BLD-800: ")
+    assert "2 190" in row
+
+
+def test_blender_passport_pdf_has_two_tables():
+    units = parse_pdf(DATA / "blender_passport.pdf")
+
+    tables = [unit for unit in units if unit.kind == "table"]
+    assert [table.page for table in tables] == [1, 2]
+    assert "Мощность: 800 Вт" in tables[0].text
+    # Содержимое таблицы не дублируется в тексте страницы.
+    page_text = next(unit.text for unit in units if unit.kind == "text" and unit.page == 1)
+    assert "Мощность: 800 Вт" not in page_text
 
 
 def test_normalize_text_hyphen_ligatures_and_spaces():

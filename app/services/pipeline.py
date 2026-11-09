@@ -174,14 +174,20 @@ def _as_dict(card: Card) -> dict[str, Any]:
 
 @dataclass
 class PipelineResult:
+    """Итог конвейера. Распаковывается как `draft, attempts, verdict, status = await run_pipeline(...)`."""
+
     card: Card
-    status: str  # done | needs_review
     attempts: int
-    issues: list[str] = field(default_factory=list)
+    verdict: CritiqueReport
+    status: str  # done | needs_review
     facts: SupplierFacts | None = None
 
-    def __getitem__(self, key: str) -> Any:
-        return getattr(self, key)
+    @property
+    def issues(self) -> list[str]:
+        return list(self.verdict.issues)
+
+    def __iter__(self):
+        yield from (self.card, self.attempts, self.verdict, self.status)
 
 
 async def extract(text: str) -> SupplierFacts:
@@ -215,15 +221,13 @@ async def run_pipeline(text: str, *, max_attempts: int | None = None) -> Pipelin
     attempts = max_attempts or get_settings().max_repair_rounds
     facts = await extract(text)
     issues: list[str] = []
-    card: Card | None = None
     for attempt in range(1, attempts + 1):
         card = await generate(facts, text, issues or None)
         report = await critique(card, facts, text)
         if report.verdict == "approve":
-            return PipelineResult(card, "done", attempt, [], facts)
+            return PipelineResult(card, attempt, report, "done", facts)
         issues = list(report.issues)
-    assert card is not None
-    return PipelineResult(card, "needs_review", attempts, issues, facts)
+    return PipelineResult(card, attempts, report, "needs_review", facts)
 
 
 run = run_pipeline

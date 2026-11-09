@@ -75,6 +75,34 @@ def format_row(values: list[str], headers: list[str | None]) -> tuple[str, str |
     return (f"{sku}: {body}" if body else sku), sku
 
 
+def format_table(rows: list[list[str]]) -> tuple[str, str | None] | None:
+    """Таблица в текст: по строке на строку таблицы, заголовки колонок вписаны в каждую строку.
+
+    Таблица «параметр — значение» (две колонки) даёт строки «Мощность: 800 Вт»,
+    остальные — «Наименование Блок мотора; Кол-во 1 шт.». Первая строка — заголовки.
+    Возвращает (текст, строка заголовков) или None для пустой таблицы.
+    """
+    rows = [row for row in rows if any(cell for cell in row)]
+    if len(rows) < 2:
+        return None
+    headers = rows[0]
+    header_line = "; ".join(h for h in headers if h) or None
+    by_sku = (headers[0] or "").lower().startswith(("артикул", "sku", "код"))
+    lines = []
+    for row in rows[1:]:
+        if by_sku:
+            lines.append(format_row(row, list(headers))[0])
+            continue
+        if len(headers) == 2 and len(row) >= 2:
+            key, value = row[0], row[1]
+            lines.append(f"{key}: {value}" if key and value else key or value)
+            continue
+        pairs = [f"{h} {v}" if h else v for h, v in zip(headers, row, strict=False) if v]
+        lines.append("; ".join(pairs))
+    text = "\n".join(line for line in lines if line)
+    return (text, header_line) if text else None
+
+
 def clean_text(text: str) -> str:
     """Очистка текста: переносы, лигатуры, пробелы (то же, что normalize_text)."""
     return normalize_text(text)
@@ -91,8 +119,20 @@ def normalize(content):
         return normalize_text(content)
     items = list(content)
     if items and not isinstance(items[0], str):
-        from dataclasses import replace
-
-        texts = [normalize_text(page) for page in strip_running_lines([u.text for u in items])]
-        return [replace(u, text=text) for u, text in zip(items, texts, strict=True) if text]
+        return _normalize_units(items)
     return [normalize_text(page) for page in strip_running_lines(items)]
+
+
+def _normalize_units(units: list) -> list:
+    """Колонтитулы ищутся только в текстовых блоках с номером страницы; таблицы не трогаются."""
+    from dataclasses import replace
+
+    text_idx = [i for i, u in enumerate(units) if u.kind == "text"]
+    cleaned = strip_running_lines([normalize_text(units[i].text) for i in text_idx])
+    texts = dict(zip(text_idx, cleaned, strict=True))
+    out = []
+    for i, unit in enumerate(units):
+        text = texts[i] if i in texts else normalize_text(unit.text)
+        if text:
+            out.append(replace(unit, text=text))
+    return out

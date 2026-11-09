@@ -29,7 +29,10 @@ def chunk_units(units: list[Unit], *, size: int = 800, overlap: int = 120) -> li
         if rows:
             pieces.extend(_chunk_rows(rows, size))
             rows = []
-        pieces.extend(_chunk_text(unit, size, overlap))
+        if unit.kind == "table":
+            pieces.extend(_chunk_table(unit, size))
+        else:
+            pieces.extend(_chunk_text(unit, size, overlap))
     if rows:
         pieces.extend(_chunk_rows(rows, size))
 
@@ -88,8 +91,32 @@ def _chunk_rows(rows: list[Unit], size: int) -> list[Chunk]:
     return [_make_chunk(unit.text, unit.page, unit.section, "row", unit.sku) for unit in rows]
 
 
+def _chunk_table(unit: Unit, size: int) -> list[Chunk]:
+    """Таблица целиком, если влезает в size; иначе группы целых строк, у каждой — шапка «Колонки: ...»."""
+    text = unit.text.strip()
+    if len(text) <= size:
+        return [_make_chunk(text, unit.page, unit.section, "table", unit.sku)]
+    prefix = f"Колонки: {unit.header}" if unit.header else None
+    groups: list[list[str]] = [[]]
+    for line in text.split("\n"):
+        candidate = "\n".join([*([prefix] if prefix else []), *groups[-1], line])
+        if groups[-1] and len(candidate) > size:
+            groups.append([])
+        groups[-1].append(line)
+    return [
+        _make_chunk(
+            "\n".join([*([prefix] if prefix else []), *lines]), unit.page, unit.section, "table", None
+        )
+        for lines in groups
+    ]
+
+
 def _make_chunk(
-    text: str, page: int | None, section: str | None, kind: Literal["text", "row"], sku: str | None
+    text: str,
+    page: int | None,
+    section: str | None,
+    kind: Literal["text", "row", "table"],
+    sku: str | None,
 ) -> Chunk:
     return Chunk(text=text, position=0, page=page, section=section, kind=kind, sku=sku)
 

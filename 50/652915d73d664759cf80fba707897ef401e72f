@@ -1,0 +1,77 @@
+README.md
+  s_58d0b9113ca8a9::t_d41e19ab4aa7d8 127
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_74f301e983c0d1 109-136
+docs/decisions/0003-relevance-threshold.md
+  s_58d0b9113ca8a9::t_56c04c5b1a86af 1,3,7-9,13-21,25-27,30-36,39-40,43-44
+app/rag/retrieval.py
+  s_58d0b9113ca8a9::t_74f301e983c0d1 20
+app/services/rag_pipeline.py
+  s_58d0b9113ca8a9::t_0ef15a95199606 15,98,125-126,129,131,134,136-137,141-144,146-161,186,192
+app/agents/prompts.py
+  s_58d0b9113ca8a9::t_1e970b18dfc37d 30
+  s_58d0b9113ca8a9::t_74f301e983c0d1 33,35,37,39-40
+app/core/config.py
+  s_58d0b9113ca8a9::t_74f301e983c0d1 44
+app/rag/context.py
+  s_58d0b9113ca8a9::t_74f301e983c0d1 130-131
+.env.example
+  s_58d0b9113ca8a9::t_d41e19ab4aa7d8 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "50652915d73d664759cf80fba707897ef401e72f",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 40,
+          "output_tokens": 27844,
+          "cache_read_tokens": 5821111,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 47578,
+          "assistant_messages": 20,
+          "turns": 0,
+          "ai_wall_ms": 64529,
+          "first_ts": "2026-11-09T08:02:17.650Z",
+          "last_ts": "2026-11-09T08:07:17.599Z",
+          "session_total_output_tokens": 422847
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 11,
+          "result_chars": 18457,
+          "result_input_tokens": 20,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 20458,
+          "call_output_tokens": 11584
+        },
+        {
+          "tool": "Write",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 205,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 3527,
+          "call_output_tokens": 1446
+        }
+      ],
+      "accepted_lines": 99,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

@@ -1,0 +1,107 @@
+app/parsers/docx.py
+  s_58d0b9113ca8a9::t_d725f548d8e305 13,18,65,67-68,70-71
+app/services/pipeline.py
+  s_58d0b9113ca8a9::t_0747a981da0f50 177-178,181-182,185-190,228,230
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_eac320c17c9b2e 14,86-91,107-111,118-119,122-133,163
+app/parsers/pdf.py
+  s_58d0b9113ca8a9::t_b0e87ef09a9a78 1,3-5,7-11,18-21,23-25,28-31,34-61
+uv.lock
+  s_58d0b9113ca8a9::t_498ce7e922ba38 58,87,758-806,980-1007
+app/parsers/chunker.py
+  s_58d0b9113ca8a9::t_84a840bfe47f1d 32-35,94-113,115-119
+app/core/config.py
+  s_58d0b9113ca8a9::t_0747a981da0f50 60
+tests/test_parsers.py
+  s_58d0b9113ca8a9::t_c561a87a7bc5e5 52,55-73
+app/parsers/types.py
+  s_58d0b9113ca8a9::t_d725f548d8e305 40,58,86
+pyproject.toml
+  s_58d0b9113ca8a9::t_ef3d2e982fed9f 22
+db/migrations/0008_chunks_ordinal_metadata.sql
+  s_58d0b9113ca8a9::t_324332eb4d6e4c 1-11
+app/parsers/normalizer.py
+  s_58d0b9113ca8a9::t_d725f548d8e305 78-89,91-92,96-105,122,124-138
+  s_58d0b9113ca8a9::t_324332eb4d6e4c 90,93-95
+app/guardrails/__init__.py
+  s_58d0b9113ca8a9::t_0747a981da0f50 58-61
+README.md
+  s_58d0b9113ca8a9::t_5faf5d97d0c5c2 136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "d5d420545e47ad15e7f12f63afcf50fe62c7090c",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 66,
+          "output_tokens": 40636,
+          "cache_read_tokens": 7802156,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 73573,
+          "assistant_messages": 33,
+          "turns": 0,
+          "ai_wall_ms": 103497,
+          "first_ts": "2026-11-09T07:53:07.547Z",
+          "last_ts": "2026-11-09T07:56:18.330Z",
+          "session_total_output_tokens": 348651
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 11,
+          "result_chars": 16549,
+          "result_input_tokens": 22,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 20179,
+          "call_output_tokens": 13259
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 118,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 947,
+          "call_output_tokens": 897
+        },
+        {
+          "tool": "Read",
+          "model": "claude-opus-5-5",
+          "calls": 4,
+          "result_chars": 14376,
+          "result_input_tokens": 8,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 11761,
+          "call_output_tokens": 1569
+        },
+        {
+          "tool": "Write",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 181,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 1488,
+          "call_output_tokens": 1417
+        }
+      ],
+      "accepted_lines": 208,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

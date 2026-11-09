@@ -161,3 +161,8 @@ def mask_pii(text: str) -> MaskResult:
     text = _mask_kind(text, _CARD_RE, "card", _luhn_ok, findings)
     text = _mask_kind(text, _INN_RE, "inn", _inn_ok, findings)
     return MaskResult(text=text, findings=tuple(findings))
+
+
+def _inn_checksum(value: str) -> bool:
+    """Проверка контрольной суммы ИНН (10 или 12 цифр). Имя из практики темы."""
+    return _inn_ok(value)

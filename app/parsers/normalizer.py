@@ -78,3 +78,14 @@ def format_row(values: list[str], headers: list[str | None]) -> tuple[str, str |
 def clean_text(text: str) -> str:
     """Очистка текста: переносы, лигатуры, пробелы (то же, что normalize_text)."""
     return normalize_text(text)
+
+
+def normalize(content: str | list[str]) -> str | list[str]:
+    """Нормализация документа.
+
+    Строка — чистится как один текст. Список страниц — сначала убираются колонтитулы,
+    затем каждая страница чистится отдельно.
+    """
+    if isinstance(content, str):
+        return normalize_text(content)
+    return [normalize_text(page) for page in strip_running_lines(list(content))]

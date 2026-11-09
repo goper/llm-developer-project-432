@@ -49,3 +49,5 @@ def parse_json_reply(text: str) -> Any:
 
 # Имя из практики темы.
 LLMJsonError = JsonReplyError
+
+parse_llm_json = parse_json_reply

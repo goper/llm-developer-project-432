@@ -1,0 +1,99 @@
+app/repositories/documents.py
+  s_58d0b9113ca8a9::t_05d3e504d0858f 23,49-51,64
+  s_58d0b9113ca8a9::t_3e32bb80823693 54-60
+app/services/structured.py
+  s_58d0b9113ca8a9::t_587094d1afee4c 25-28,190,197-198,204-207,222-224,253
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_3e32bb80823693 42-74
+tests/test_pipeline.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 61,70,84,100
+db/migrations/0007_documents_contract.sql
+  s_58d0b9113ca8a9::t_05d3e504d0858f 1-7
+app/agents/roles.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 26-28
+app/routers/cards.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 19
+app/rag/retrieval.py
+  s_58d0b9113ca8a9::t_db6ee6e1bbf605 1-6,11-12,19-84,95,97-98
+app/services/pipeline.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 14,16,18-20,120,168-229
+app/parsers/types.py
+  s_58d0b9113ca8a9::t_3e32bb80823693 44-48,63-73
+app/services/documents.py
+  s_58d0b9113ca8a9::t_3e32bb80823693 9,13,63,89,91
+evals/run.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 46
+app/core/config.py
+  s_58d0b9113ca8a9::t_38740252cfeb0c 76-85
+app/schemas/cards.py
+  s_58d0b9113ca8a9::t_b65d88ad4415ce 9,77-82
+  s_58d0b9113ca8a9::t_6a766c08536da5 7,40-41,105-116
+app/guardrails/pii.py
+  s_58d0b9113ca8a9::t_437537efb82369 18,88
+README.md
+  s_58d0b9113ca8a9::t_437537efb82369 133
+app/parsers/chunker.py
+  s_58d0b9113ca8a9::t_3e32bb80823693 3,97-109
+tests/test_guardrails.py
+  s_58d0b9113ca8a9::t_61aa915491bd1c 52,58,63,68,87,235
+  s_58d0b9113ca8a9::t_8ed4aa6e1c3362 111
+app/rag/embedder.py
+  s_58d0b9113ca8a9::t_db6ee6e1bbf605 72-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "108a29ab869cd71192522bc5443244f7701b9eef",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 88,
+          "output_tokens": 50339,
+          "cache_read_tokens": 9027309,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 121442,
+          "assistant_messages": 44,
+          "turns": 0,
+          "ai_wall_ms": 69577,
+          "first_ts": "2026-11-09T07:46:38.440Z",
+          "last_ts": "2026-11-09T07:50:34.304Z",
+          "session_total_output_tokens": 308015
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 19,
+          "result_chars": 20832,
+          "result_input_tokens": 38,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 28674,
+          "call_output_tokens": 19820
+        },
+        {
+          "tool": "Read",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 40646,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 18019,
+          "call_output_tokens": 162
+        }
+      ],
+      "accepted_lines": 308,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

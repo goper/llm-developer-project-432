@@ -45,3 +45,7 @@ def parse_json_reply(text: str) -> Any:
         return value
 
     raise JsonReplyError("в ответе модели не нашлось JSON")
+
+
+# Имя из практики темы.
+LLMJsonError = JsonReplyError

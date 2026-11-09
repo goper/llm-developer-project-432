@@ -43,3 +43,8 @@ def bind_job(job_id: str) -> Iterator[None]:
         yield
     finally:
         job_id_var.reset(token)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Логгер модуля; request_id и job_id добавляет фильтр корневого обработчика."""
+    return logging.getLogger(name)

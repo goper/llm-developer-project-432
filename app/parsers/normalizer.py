@@ -73,3 +73,8 @@ def format_row(values: list[str], headers: list[str | None]) -> tuple[str, str |
     if sku is None:
         return body, None
     return (f"{sku}: {body}" if body else sku), sku
+
+
+def clean_text(text: str) -> str:
+    """Очистка текста: переносы, лигатуры, пробелы (то же, что normalize_text)."""
+    return normalize_text(text)

@@ -146,3 +146,8 @@ class InjectionDetector:
             suspicious = True if manipulation is None else manipulation
             verdicts.append(FragmentVerdict(fragment_id, suspicious, hits, "model"))
         return verdicts
+
+
+def detect_injection_regex(text: str) -> bool:
+    """Быстрый уровень детектора: сработало ли хотя бы одно правило по тексту."""
+    return bool(check_rules(text))

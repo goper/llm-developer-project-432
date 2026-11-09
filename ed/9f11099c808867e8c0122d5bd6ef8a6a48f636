@@ -1,0 +1,131 @@
+app/core/config.py
+  s_58d0b9113ca8a9::t_58c3f262783f04 59
+  s_58d0b9113ca8a9::t_fc1c36aa7a25a9 71-75
+app/parsers/xlsx.py
+  s_58d0b9113ca8a9::t_22f7c577ade304 10,13,16,18
+app/agents/roles.py
+  s_58d0b9113ca8a9::t_ea5aceeef0d034 1-44
+app/services/structured.py
+  s_58d0b9113ca8a9::t_cfc8a122ee8682 15,179-244
+app/services/pipeline.py
+  s_58d0b9113ca8a9::t_0751fed90d2229 15
+app/guardrails/injection.py
+  s_58d0b9113ca8a9::t_6ece8f24c96d69 151-181
+uv.lock
+  s_58d0b9113ca8a9::t_ec09d6b146758c 41-48,56,76,84,103,116-179,207-256,301-309,490-516,578-615,700-722,828-836,906-919,945-957,989-998,1017-1030,1055-1069,1083-1117,1257-1269,1491-1499,1512-1536
+db/migrations/0006_chunks_doc_id.sql
+  s_58d0b9113ca8a9::t_fb29f8f465fb17 1-11
+app/agents/prompts.py
+  s_58d0b9113ca8a9::t_ea5aceeef0d034 63
+app/guardrails/__init__.py
+  s_58d0b9113ca8a9::t_e690766cb50379 8-9,13-19,22-23,27,30-31,37-41,48,53-63,66,71,74,85,89-93,106-107,111-114,117-118,120-126,129-131,134-152,156-160,162,167-177
+app/parsers/chunker.py
+  s_58d0b9113ca8a9::t_724009194d1c9d 13,82,84-87
+app/repositories/chunks.py
+  s_58d0b9113ca8a9::t_fb29f8f465fb17 52,71,74,87,107-108,120,157,174,208,220
+  s_58d0b9113ca8a9::t_a790d3e62bbe39 58
+app/parsers/normalizer.py
+  s_58d0b9113ca8a9::t_5b67691b51bc92 83,87-88,92-98
+tests/test_parsers.py
+  s_58d0b9113ca8a9::t_3614b9fa2262c7 112-115
+app/services/documents.py
+  s_58d0b9113ca8a9::t_5b67691b51bc92 9,16,67,69-70,76-77,81-83,86,89,94-96,107,115
+pyproject.toml
+  s_58d0b9113ca8a9::t_6a9a43db1b452d 21,29
+  s_58d0b9113ca8a9::t_0751fed90d2229 45-46
+app/parsers/docx.py
+  s_58d0b9113ca8a9::t_22f7c577ade304 14,17,20,22
+app/parsers/pdf.py
+  s_58d0b9113ca8a9::t_22f7c577ade304 7,12,15,17
+app/parsers/types.py
+  s_58d0b9113ca8a9::t_5b67691b51bc92 55-69
+  s_58d0b9113ca8a9::t_22f7c577ade304 3,5-22
+app/guardrails/pii.py
+  s_58d0b9113ca8a9::t_4a4aa07a57e0c0 26-30
+app/repositories/documents.py
+  s_58d0b9113ca8a9::t_fb29f8f465fb17 24
+app/schemas/cards.py
+  s_58d0b9113ca8a9::t_e1e42d7ea0232d 18,21,25-26,37
+app/llm/client.py
+  s_58d0b9113ca8a9::t_3d950edd7ea4ac 22
+  s_58d0b9113ca8a9::t_2809f46da70455 11
+  s_58d0b9113ca8a9::t_6a0535f7034f06 213-260,264-304
+  s_58d0b9113ca8a9::t_cfc8a122ee8682 261-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "ed9f11099c808867e8c0122d5bd6ef8a6a48f636",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 240,
+          "output_tokens": 132867,
+          "cache_read_tokens": 21403421,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 387653,
+          "assistant_messages": 120,
+          "turns": 1,
+          "ai_wall_ms": 281288,
+          "first_ts": "2026-11-09T06:36:42.239Z",
+          "last_ts": "2026-11-09T07:44:13.253Z",
+          "session_total_output_tokens": 257676
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 36,
+          "result_chars": 59518,
+          "result_input_tokens": 72,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 51012,
+          "call_output_tokens": 23275
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 8,
+          "result_chars": 1394,
+          "result_input_tokens": 16,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 21845,
+          "call_output_tokens": 21657
+        },
+        {
+          "tool": "Read",
+          "model": "claude-opus-5-5",
+          "calls": 11,
+          "result_chars": 107103,
+          "result_input_tokens": 22,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 64788,
+          "call_output_tokens": 20964
+        },
+        {
+          "tool": "Write",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 189,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 3407,
+          "call_output_tokens": 3219
+        }
+      ],
+      "accepted_lines": 459,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

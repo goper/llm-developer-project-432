@@ -1,30 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
 
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
-###< symfony/framework-bundle ###
+# Секреты и локальные настройки
+.env
+.env.local
 
-###> friendsofphp/php-cs-fixer ###
-/.php-cs-fixer.php
-/.php-cs-fixer.cache
-###< friendsofphp/php-cs-fixer ###
-
-###> phpstan/phpstan ###
-phpstan.neon
-###< phpstan/phpstan ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
-
-###> project ###
+# Загрузки и данные прогонов
+var/
 /data/bulk/            # необязательный большой набор supplier-docs (сто документов), не коммитится
-/evals/report-*.json   # отчёты прогонов метрик — цифры переносятся в README
+/evals/reports/        # отчёты прогонов метрик — цифры переносятся в README
+
+# IDE
 /.idea/
-###< project ###

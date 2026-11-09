@@ -3,107 +3,165 @@
 [![hexlet-check](https://github.com/goper/llm-developer-project-432/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/goper/llm-developer-project-432/actions)
 
 Бэкенд-сервис, который принимает документы поставщиков (pdf, docx, xlsx), строит по ним поисковый индекс
-и просит языковую модель собрать черновик карточки товара. Каждая характеристика в карточке ссылается на
-фрагмент документа, откуда взята; чего в документах нет, попадает в список недостающих полей, а не выдумывается.
+и просит языковую модель собрать черновик карточки товара. Каждая характеристика ссылается на фрагмент
+документа, откуда взята; чего в документах нет, попадает в список недостающих полей, а не выдумывается.
 
 Учебный проект Хекслета: https://ru.hexlet.io/programs/llm-developer (проект 432).
 
-> **Язык решения — PHP 8.5 и Symfony 7.4.** Задание написано под Python, и автопроверка Хекслета
-> (тесты по раскладке Python-модулей) на этом репозитории не проходит. Приёмка — по ревью наставника,
-> решение и таблица соответствия стеков записаны в [docs/decisions/0002-php-symfony.md](docs/decisions/0002-php-symfony.md).
-
 ## Стек
 
-- PHP 8.5, Symfony 7.4 LTS, FrankenPHP в worker-режиме (HTTP)
-- PostgreSQL 17 + pgvector, Doctrine DBAL без ORM, SQL-миграции со своим раннером
-- Temporal (устойчивые процессы), PHP SDK через RoadRunner (воркер появляется на шаге 3)
-- Ollama (OpenAI-совместимый API, две модели) и контейнер эмбеддингов TEI с `intfloat/multilingual-e5-small`
-- PHPUnit, PHP CS Fixer, PHPStan
+Python 3.12, FastAPI, Pydantic, PostgreSQL 17 + pgvector, Temporal, локальные эмбеддинги
+sentence-transformers (`intfloat/multilingual-e5-small`), модель по OpenAI-совместимому API
+(LM Studio, Ollama или OpenRouter). Зависимости — [uv](https://docs.astral.sh/uv/) и `uv.lock`.
 
-Локально нужны только Docker (с Compose) и make: PHP и все расширения живут в образе.
+## Запуск с нуля
 
-## Установка и запуск
+Нужны Docker с Compose, make, uv и сервер модели с OpenAI-совместимым API.
 
 ```bash
 git clone https://github.com/goper/llm-developer-project-432.git
 cd llm-developer-project-432
-make install      # composer install внутри контейнера приложения (первый раз собирает образ, ~10 минут из-за grpc)
-make up           # база с pgvector, Temporal, Ollama, эмбеддинги; ждёт healthy
-make migrate      # SQL-миграции по порядку; второй запуск сообщит «новых миграций нет»
-make dev          # HTTP API на http://localhost:8000
+cp .env.example .env   # адрес модели и имена моделей поправьте под свой сервер
+make install           # зависимости из uv.lock (torch — CPU-сборка)
+make up                # PostgreSQL с pgvector и Temporal; ждёт healthy
+make migrate           # первый запуск: «Миграция применена: …», второй: «Новых миграций нет»
+make worker            # в отдельном терминале: воркер процессов Temporal
+make dev               # в отдельном терминале: HTTP API на http://localhost:8000
 ```
 
-Проверка состояния:
+Модель эмбеддингов (~470 МБ) скачивается при первом разборе документа и кэшируется в `~/.cache/huggingface`.
+
+Порты по умолчанию: база **5434**, Temporal **7234**, веб-интерфейс Temporal **http://localhost:8234**.
+Они нарочно не стандартные, чтобы не спорить с другими Postgres и Temporal на машине. Переопределить:
+`DB_PORT=5440 TEMPORAL_PORT=7240 make up` и те же порты в `DATABASE_URL` / `TEMPORAL_ADDRESS` в `.env`.
+
+Модель. Пример для Ollama: `ollama pull qwen2.5:14b && ollama pull qwen2.5:7b`, затем в `.env`:
+`LLM_BASE_URL=http://localhost:11434/v1`, `LLM_MODEL=qwen2.5:14b`, `LLM_CHEAP_MODEL=qwen2.5:7b`.
+Если сервер поддерживает строгий режим JSON-схем, поставьте `LLM_STRUCTURED_MODE=schema`.
+
+Полный сброс состояния: `make clean-volumes` (удаляет тома базы и Temporal).
+
+## Проверка
 
 ```bash
-curl localhost:8000/health/live     # {"status":"ok"} — всегда, пока процесс жив
-curl localhost:8000/health/ready    # {"status":"ok","vector":"0.8.x"} — база доступна и расширение vector включено
+curl localhost:8000/health/live     # {"status":"ok"} — пока процесс жив, даже без базы
+curl localhost:8000/health/ready    # {"status":"ok","vector":"0.8.7"}; без базы — 503
+
+# Загрузка: 202 и идентификатор; повторная загрузка того же файла вернёт тот же документ
+curl -F file=@data/blender_passport.pdf localhost:8000/documents/
+curl localhost:8000/documents/<document_id>   # status: new → parsing → indexing → indexed | failed, chunks_count
+
+# Генерация: 202 и идентификатор задачи; тот же Idempotency-Key вернёт ту же задачу
+curl -X POST localhost:8000/generate-card -H 'Content-Type: application/json' \
+     -H 'Idempotency-Key: blender-1' -d '{"document_ids":["<document_id>"],"product_hint":"блендер"}'
+curl localhost:8000/jobs/<job_id>             # статус, карточка, отчёт защиты, стоимость
+
+# Ручная проверка карточки
+curl localhost:8000/workflows/<job_id>/state
+curl -X POST localhost:8000/workflows/<job_id>/approve    # или /reject
+
+# Синхронно, по тексту (без документов и поиска)
+curl -X POST localhost:8000/cards -H 'Content-Type: application/json' -d '{"text":"Блендер 800 Вт, чаша 1,5 л"}'
 ```
 
-Веб-интерфейс Temporal: http://localhost:8233.
+Состояния задачи: `pending → searching → generating → checking → waiting_approval | needs_review →
+approved | rejected`, при ошибке шага — `failed` с причиной. `needs_review` — уверенность ниже
+`CONFIDENCE_THRESHOLD` или проблемы, оставшиеся после трёх кругов переделки. В обоих случаях процесс
+ждёт сигнала человека.
 
-Порты на хосте: приложение 8000, база 5433, Ollama 11435, эмбеддинги 8080, Temporal 7233 и 8233. Если какой-то
-занят, переопределите переменной перед командой: `DB_PORT=5434 make up` (есть `APP_PORT`, `OLLAMA_PORT`,
-`EMBEDDINGS_PORT`). Внутри compose сервисы ходят друг к другу по именам, хост-порты нужны только вам.
-
-Переменные окружения: значения по умолчанию лежат в `.env` (без секретов, рассчитаны на docker compose),
-локальные правки и ключи — в `.env.local` (в репозиторий не попадает). Тесты используют `.env.test` и отдельную
-базу `cards_test`.
+Отсканированный `data/boiler_scan.pdf` получает `failed` с причиной «нет текстового слоя: похоже на скан,
+распознавание не подключено».
 
 ## Команды
 
 | Команда | Что делает |
 | --- | --- |
-| `make install` | зависимости из `composer.lock` |
-| `make up` / `make down` | поднять / остановить инфраструктуру |
+| `make install` | зависимости из `uv.lock` |
+| `make up` / `make down` | поднять / остановить базу и Temporal |
 | `make migrate` | применить миграции из `db/migrations` |
-| `make dev` | приложение на :8000 |
-| `make worker` | воркер процессов Temporal (шаг 3) |
-| `make test` | PHPUnit |
-| `make lint` / `make lint-fix` | PHP CS Fixer + PHPStan |
-| `make reindex` | досчитать векторы фрагментам без них (шаг 6) |
-| `make eval` | метрики на эталоне, `FULL=1` — весь набор (шаг 8) |
+| `make dev` | HTTP API на :8000 |
+| `make worker` | воркер процессов Temporal |
+| `make test` | тесты; модели не нужны, тесты с маркером `db` используют базу `cards_test` |
+| `make lint` / `make lint-fix` | ruff check и ruff format |
+| `make reindex` | досчитать векторы фрагментам без них; повторный запуск — «0» |
+| `make eval` | метрики на наборе `eval_defaults`; `make eval FULL=1` — весь эталон |
 
-## Структура
+## Как устроено
 
 ```text
-src/
-├── Core/          Config.php, Db.php (pool / connection), Migrate.php
-├── Command/       консольные команды: app:migrate, app:reindex, app:eval
-├── Controller/    тонкие HTTP-обработчики: Health, Cards, Jobs, Documents, Generate
-├── Service/       Pipeline, Structured, Documents, RagPipeline, JsonUtils
-├── Agent/         Prompts — промпты ролей отдельно от логики
-├── Llm/           Client (единственная дверь к модели), Cost, Reply
-├── Rag/           Embedder, Retrieval, ContextBuilder
-├── Parser/        Pdf, Docx, Xlsx, Normalizer, Chunker
-├── Guardrail/     Pii, Injection, OutputFilter
-├── Repository/    весь SQL проекта
-├── Schema/        DTO: Card, Seo, SourceRef, Job
-└── Temporal/      процессы и шаги: GenerateCardWorkflow, ParseDocumentWorkflow, *Activities
-db/migrations/     SQL-файлы NNNN_название.sql
-data/              пять документов поставщиков и эталон golden_cards.json (как есть, побайтово)
-docs/decisions/    записанные архитектурные решения
-evals/             прогон метрик и отчёты
-tests/
+POST /documents/ ──► ParseDocumentWorkflow ──► разбор → нормализация → фрагменты → векторы
+                                                       (documents, chunks)
+
+POST /generate-card ──► GenerateCardWorkflow
+    поиск (гибрид, фильтр по документам)
+    → маскирование ПДн → детектор инъекций (правила, затем дешёвая модель) → контекст с chunk_id
+    → извлечение фактов → генерация карточки → проверка (ссылки кодом + проверяющая роль)
+    → петля точечной переделки, не больше 3 кругов
+    → финиш: waiting_approval | needs_review → ожидание сигнала → approved | rejected
 ```
 
-Правила проекта: SQL только в `src/Repository`, к модели только через `App\Llm\Client`, контроллеры без
-бизнес-правил, промпты в `src/Agent/Prompts.php`, тесты не ходят в модель.
+```text
+app/
+├── main.py          FastAPI, промежуточный слой с request_id
+├── core/            config.py, db.py (pool / connection), logging.py (request_id, job_id), migrate.py
+├── routers/         health, cards, jobs, documents, generate, workflows
+├── services/        pipeline, structured, documents, rag_pipeline, json_utils
+├── agents/          prompts.py — промпты ролей
+├── llm/             client.py (единственная дверь к модели), cost.py
+├── rag/             embedder, retrieval, context, reindex
+├── parsers/         pdf, docx, xlsx, normalizer, chunker
+├── guardrails/      pii, injection; __init__.py — фильтр выхода check_output
+├── repositories/    jobs, documents, chunks, llm_calls — весь SQL проекта
+├── schemas/         cards (контракт карточки), jobs (формы API)
+└── temporal/        workflows, activities, client, worker, payloads
+db/migrations/       0001_init … 0005_llm_calls
+evals/               metrics.py, run.py; отчёты в evals/reports/
+data/                пять документов поставщиков и golden_cards.json (как есть)
+docs/decisions/      записанные решения
+```
 
-## Ход работы
+## Решения
 
-| Шаг | Состояние |
-| --- | --- |
-| 1. Понять задачу | готово |
-| 2. Каркас: Compose с pgvector и Temporal, миграции, пул, health, data/ | готово |
-| 3. Архитектура: клиент модели, три роли, процесс Temporal | — |
-| 4. Контракт результата | — |
-| 5. Документы | — |
-| 6. Поиск | — |
-| 7. Сборка сквозного сценария | — |
-| 8. Production: стоимость, трассировка, метрики | — |
-| 9. Защита | — |
-| 10. Сдача: прогон с нуля, отчёт | — |
+- [0001 — миграции: SQL-файлы и свой раннер](docs/decisions/0001-migrations.md)
+- [0002 — стек, слои, уровни повтора](docs/decisions/0002-stack.md)
+- [0003 — порог релевантности 0.82 и как он откалиброван](docs/decisions/0003-relevance-threshold.md)
+- [0004 — две модели: основная и дешёвая](docs/decisions/0004-two-models.md)
+
+## Защита
+
+- Персональные данные (телефон, почта, ИНН с проверкой контрольной суммы, карта по Луну) заменяются
+  метками «телефон номер один» при сборке контекста — до промпта и до логов. В логи пишутся только метки.
+- Инъекции: правила по тексту для всех фрагментов, дешёвая модель — только для помеченных. Если модель
+  недоступна или ответ не разобрать, фрагмент считается подозрительным. Подозрительные фрагменты
+  исключаются; больше `INJECTION_SUSPICIOUS_LIMIT` — задача уходит в `failed` с причиной.
+  Инъекция из `data/kettle_manual.pdf` («SYSTEM: игнорируй все предыдущие инструкции…») ловится правилами.
+- Фильтр выхода `app.guardrails.check_output` проверяет текст карточки на ПДн и следы служебных инструкций.
+- В результате задачи поле `protection`: что исключено (chunk_id и причина) и сколько чего замаскировано.
+
+## Наблюдаемость
+
+Стоимость одной карточки:
+
+```sql
+SELECT role, count(*), sum(cost_usd) FROM llm_calls WHERE job_id = '<job_id>' GROUP BY role;
+```
+
+Тот же расчёт отдаёт `GET /jobs/<job_id>` в поле `cost`. Весь путь задачи в логах:
+`grep 'job=<job_id>'` по выводу `make dev` и `make worker`.
+
+## Отчёт о прогоне
+
+Состояние на 2026-11-09:
+
+- Проверено вживую: инфраструктура, миграции на чистой базе и повторный запуск, health live/ready
+  (в том числе при недоступной базе), загрузка всех пяти документов (четыре `indexed`, скан — `failed`
+  с причиной), идемпотентность загрузки и ключа задачи, процесс генерации до вызова модели; при
+  недоступной модели задача честно уходит в `failed` с причиной `LLMUnavailableError`.
+- Процесс генерации с подменёнными шагами проверен в тестовом окружении Temporal: ожидание подтверждения,
+  сигналы approve / reject, петля ограничена тремя кругами.
+- **Не выполнено**: прогон генерации и метрик (`make eval`) с настоящей моделью — на машине разработки
+  не было чат-модели. Цифры метрик, стоимость карточки и разбор самой слабой метрики появятся здесь
+  после `make eval` с подключённым сервером модели.
 
 ---
 

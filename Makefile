@@ -1,50 +1,58 @@
-# Все команды идут через docker compose: локально нужны только docker и make.
-COMPOSE = docker compose
-# Разовые команды идут от вашего пользователя, чтобы vendor/ и var/ не стали root-овскими; сам сервер app работает как root.
-RUN     = $(COMPOSE) run --rm --user $$(id -u):$$(id -g) -e HOME=/tmp -e COMPOSER_HOME=/tmp/composer
-APP     = $(RUN) --no-deps app
+# Все команды проекта. Нужны uv (менеджер зависимостей) и docker compose.
+UV ?= uv
+export UV_PROJECT_ENVIRONMENT ?= .venv
 
-.PHONY: help install up down migrate dev worker test lint lint-fix reindex eval ps logs
+.PHONY: help install up down logs migrate dev worker test lint lint-fix reindex eval clean-volumes
 
-help:           ## показать команды
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed 's/:.*## / — /'
+help:
+	@echo "install       зависимости из uv.lock"
+	@echo "up / down     база с pgvector и Temporal (docker compose)"
+	@echo "migrate       SQL-миграции из db/migrations"
+	@echo "dev           HTTP API на :8000"
+	@echo "worker        воркер процессов Temporal"
+	@echo "test          тесты (без доступа к модели)"
+	@echo "lint          ruff check + format --check"
+	@echo "reindex       досчитать векторы фрагментам без них"
+	@echo "eval          метрики на эталоне; FULL=1 — весь набор"
+	@echo "clean-volumes удалить тома (полный сброс состояния)"
 
-install:        ## зависимости из composer.lock (внутри контейнера приложения)
-	$(APP) composer install --no-interaction
+install:
+	$(UV) sync --frozen
 
-up:             ## инфраструктура: база с pgvector, Temporal, Ollama, эмбеддинги
-	$(COMPOSE) up -d --wait db temporal ollama embeddings
+up:
+	docker compose up -d --wait
 
-down:           ## остановить всё (тома остаются)
-	$(COMPOSE) down
+down:
+	docker compose down
 
-migrate:        ## SQL-миграции по порядку; повторный запуск — «новых миграций нет»
-	$(RUN) app php bin/console app:migrate
+logs:
+	docker compose logs -f
 
-dev:            ## HTTP API на http://localhost:8000
-	$(COMPOSE) up app
+migrate:
+	$(UV) run python -m app.core.migrate
 
-worker:         ## воркер процессов Temporal (шаг 3)
-	$(COMPOSE) --profile worker up worker
+dev:
+	$(UV) run uvicorn app.main:app --reload --port 8000
 
-test:           ## тесты (база cards_test поднимается вместе с инфраструктурой)
-	$(RUN) app vendor/bin/phpunit
+worker:
+	$(UV) run python -m app.temporal.worker
 
-lint:           ## стиль кода и статический анализ
-	$(APP) vendor/bin/php-cs-fixer fix --dry-run --diff
-	$(APP) vendor/bin/phpstan analyse --memory-limit=512M
+test:
+	$(UV) run pytest
 
-lint-fix:       ## поправить стиль автоматически
-	$(APP) vendor/bin/php-cs-fixer fix
+lint:
+	$(UV) run ruff check .
+	$(UV) run ruff format --check .
 
-reindex:        ## досчитать векторы фрагментам без них (шаг 6)
-	$(RUN) app php bin/console app:reindex
+lint-fix:
+	$(UV) run ruff check --fix .
+	$(UV) run ruff format .
 
-eval:           ## метрики на эталоне (шаг 8); FULL=1 — весь набор
-	$(RUN) app php bin/console app:eval $(if $(FULL),--full,)
+reindex:
+	$(UV) run python -m app.rag.reindex
 
-ps:             ## состояние контейнеров
-	$(COMPOSE) ps
+eval:
+	$(UV) run python -m evals.run $(if $(FULL),--full,)
 
-logs:           ## логи приложения
-	$(COMPOSE) logs -f app
+clean-volumes:
+	docker compose down -v

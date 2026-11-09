@@ -1,8 +1,0 @@
-# Конфигурация RoadRunner для воркера Temporal (шаг 3). Запуск: rr serve -c .rr.yaml
-version: "3"
-server:
-  command: "php bin/worker.php"
-temporal:
-  address: "temporal:7233"
-  activities:
-    num_workers: 4      # сколько шагов с базой/диском выполняются одновременно («пул потоков» из урока)

@@ -1,0 +1,78 @@
+"""Разбор docx: абзацы с секциями по заголовкам и таблицы как строки."""
+
+import zipfile
+from collections.abc import Iterator
+from pathlib import Path
+
+import docx
+from docx.document import Document as DocxDocument
+from docx.opc.exceptions import PackageNotFoundError
+from docx.oxml.ns import qn
+from docx.table import Table
+from docx.text.paragraph import Paragraph
+
+from app.parsers.normalizer import format_row, normalize_text
+from app.parsers.types import ParseError, Unit
+
+
+def parse_docx(path: Path) -> list[Unit]:
+    """Вернуть текстовые единицы по секциям и строки таблиц (kind="row") в порядке документа."""
+    try:
+        document = docx.Document(path)
+    except (PackageNotFoundError, zipfile.BadZipFile, OSError) as exc:
+        raise ParseError(f"не удалось открыть docx {path.name}: {exc}") from exc
+
+    units: list[Unit] = []
+    lines: list[str] = []
+    section: str | None = None
+    for block in _iter_blocks(document):
+        if isinstance(block, Paragraph):
+            text = normalize_text(block.text)
+            if not text:
+                continue
+            if _is_heading(block):
+                _flush(units, lines, section)
+                section = text
+            lines.append(text)
+        else:
+            _flush(units, lines, section)
+            units.extend(_table_units(block, section))
+    _flush(units, lines, section)
+    return units
+
+
+def _iter_blocks(document: DocxDocument) -> Iterator[Paragraph | Table]:
+    """Абзацы и таблицы в порядке следования в теле документа."""
+    for child in document.element.body.iterchildren():
+        if child.tag == qn("w:p"):
+            yield Paragraph(child, document)
+        elif child.tag == qn("w:tbl"):
+            yield Table(child, document)
+
+
+def _is_heading(paragraph: Paragraph) -> bool:
+    style = paragraph.style.name if paragraph.style is not None else ""
+    return style.startswith(("Heading", "Заголовок"))
+
+
+def _flush(units: list[Unit], lines: list[str], section: str | None) -> None:
+    """Сохранить накопленные абзацы одной секции как единицу."""
+    if lines:
+        units.append(Unit(text="\n".join(lines), section=section))
+        lines.clear()
+
+
+def _table_units(table: Table, section: str | None) -> list[Unit]:
+    """Строки таблицы; первая строка таблицы — заголовки колонок."""
+    rows = [[normalize_text(cell.text) for cell in row.cells] for row in table.rows]
+    if not rows:
+        return []
+    headers: list[str | None] = [value or None for value in rows[0]]
+    header_line = "; ".join(header for header in headers if header) or None
+
+    units = []
+    for values in rows[1:]:
+        text, sku = format_row(values, headers)
+        if text:
+            units.append(Unit(text=text, section=section, kind="row", header=header_line, sku=sku))
+    return units

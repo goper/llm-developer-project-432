@@ -1,0 +1,58 @@
+app/core/config.py
+  s_58d0b9113ca8a9::t_d57b49aff823ac 75-78
+app/guardrails/__init__.py
+  s_58d0b9113ca8a9::t_d57b49aff823ac 1-9,14-46,57-127
+app/rag/context.py
+  s_58d0b9113ca8a9::t_d57b49aff823ac 85-93
+app/parsers/chunker.py
+  s_58d0b9113ca8a9::t_d57b49aff823ac 112-116
+app/schemas/cards.py
+  s_58d0b9113ca8a9::t_d57b49aff823ac 95-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "6b60baf437aa8d2b9a60fe069c433d60f708a110",
+  "prompts": {},
+  "sessions": {
+    "s_58d0b9113ca8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2900ddd-307c-42b4-8c1f-f0897207e65b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "azhaliazouski <azhaliazouski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 134,
+          "output_tokens": 43162,
+          "cache_read_tokens": 21190003,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 110526,
+          "assistant_messages": 61,
+          "turns": 1,
+          "ai_wall_ms": 186546,
+          "first_ts": "2026-11-09T06:08:44.817Z",
+          "last_ts": "2026-11-09T06:24:27.487Z",
+          "session_total_output_tokens": 104221
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 28,
+          "result_chars": 49502,
+          "result_input_tokens": 58,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 43972,
+          "call_output_tokens": 18015
+        }
+      ],
+      "accepted_lines": 137,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "6bb35f1b-13de-4f29-82d6-96fc6b3ae5f8"
+}

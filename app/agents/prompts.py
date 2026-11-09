@@ -27,17 +27,17 @@ def schema_text(model_cls: type[BaseModel]) -> str:
 
 
 def render_fragments(fragments: list[dict[str, Any]]) -> str:
-    """Фрагменты с опознаваемыми идентификаторами. Формат тот же, что в контексте генерации."""
+    """Фрагменты с шапкой [chunk_id | файл | стр. N | раздел]; по chunk_id модель ссылается на источник."""
     lines = []
     for item in fragments:
-        meta = f"chunk_id={item['chunk_id']}"
+        parts = [str(item["chunk_id"])]
         if item.get("filename"):
-            meta += f", файл {item['filename']}"
+            parts.append(str(item["filename"]))
         if item.get("page") is not None:
-            meta += f", стр. {item['page']}"
+            parts.append(f"стр. {item['page']}")
         if item.get("section"):
-            meta += f", раздел «{item['section']}»"
-        lines.append(f"[{meta}]\n{item['text']}")
+            parts.append(str(item["section"]))
+        lines.append(f"[{' | '.join(parts)}]\n{item['text']}")
     return "\n\n".join(lines)
 
 

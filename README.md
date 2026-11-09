@@ -124,7 +124,7 @@ docs/decisions/      записанные решения
 
 - [0001 — миграции: SQL-файлы и свой раннер](docs/decisions/0001-migrations.md)
 - [0002 — стек, слои, уровни повтора](docs/decisions/0002-stack.md)
-- [0003 — порог релевантности 0.82 и как он откалиброван](docs/decisions/0003-relevance-threshold.md)
+- [0003 — порог релевантности 0.81 и как он откалиброван](docs/decisions/0003-relevance-threshold.md)
 - [0004 — две модели: основная и дешёвая](docs/decisions/0004-two-models.md)
 
 ## Защита

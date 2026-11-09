@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     embedding_passage_prefix: str = "passage: "
     embedding_batch_size: int = 32
     # Порог релевантности (косинусная близость). Калибровка: docs/decisions/0003-relevance-threshold.md
-    relevance_threshold: float = 0.82
+    relevance_threshold: float = 0.81
     search_top_k: int = 8
     rrf_k: int = 60  # константа в формуле слияния рангов: 1 / (k + позиция)
 

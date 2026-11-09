@@ -106,6 +106,34 @@ def _hit(row: dict[str, Any], score: float) -> ChunkHit:
     )
 
 
+def embed_query(text: str) -> list[float]:
+    """Вектор запроса для поиска (модель эмбеддингов из app.rag.embedder)."""
+    from app.rag import embedder
+
+    return embedder.embed_query(text)
+
+
+def vector_search(*args: Any, **kwargs: Any) -> list[ChunkHit]:
+    """Поиск по смыслу по тексту запроса (см. app.rag.retrieval.vector_search)."""
+    from app.rag import retrieval
+
+    return retrieval.vector_search(*args, **kwargs)
+
+
+def fts_search(*args: Any, **kwargs: Any) -> list[ChunkHit]:
+    """Поиск по словам (см. app.rag.retrieval.fts_search)."""
+    from app.rag import retrieval
+
+    return retrieval.fts_search(*args, **kwargs)
+
+
+def hybrid_search(*args: Any, **kwargs: Any) -> list[ChunkHit]:
+    """Гибридный поиск со слиянием рангов (см. app.rag.retrieval.hybrid_search)."""
+    from app.rag import retrieval
+
+    return retrieval.hybrid_search(*args, **kwargs)
+
+
 def _metadata(document_id: str, c: ChunkRow) -> dict[str, Any]:
     meta = {"doc_id": document_id, "page": c.page, "section": c.section, "kind": c.kind, "articul": c.sku}
     return {k: v for k, v in meta.items() if v is not None}

@@ -8,7 +8,6 @@ hybrid_search — слияние рангов обоих (reciprocal rank fusion
 from typing import Literal
 
 from app.core.config import get_settings
-from app.rag import embedder as _embedder
 from app.rag.embedder import Embedder
 from app.repositories import chunks as chunks_repo
 from app.repositories.chunks import ChunkHit
@@ -18,7 +17,7 @@ Mode = Literal["vector", "text", "hybrid"]
 
 def embed_query(text: str) -> list[float]:
     """Вектор запроса. Отдельной функцией, чтобы в тестах модель эмбеддингов легко подменялась."""
-    return _embedder.embed_query(text)
+    return chunks_repo.embed_query(text)
 
 
 def _vector(query: str, embedder: Embedder | None) -> list[float]:

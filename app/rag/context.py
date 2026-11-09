@@ -127,4 +127,5 @@ def context_chunk_ids(context: "Context | str") -> set[str]:
         return set(context.allowed_ids)
     import re
 
-    return set(re.findall(r"chunk_id=([^,\]\s]+)", context))
+    # Шапка фрагмента: строка «[chunk_id | файл | стр. N | раздел]»; id — первое поле.
+    return set(re.findall(r"^\[([^\s|\]]+)", context, re.MULTILINE))

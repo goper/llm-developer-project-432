@@ -81,18 +81,20 @@ def test_vector_text_and_hybrid_search(clean_db: str) -> None:
 
     # Запрос по смыслу: вектор ближе всего к c-blender.
     query = mix((0, 0.95), (3, 0.05))
-    vec_hits = chunks_repo.search_vector(query, top_k=5, threshold=0.5)
+    vec_hits = chunks_repo.search_vector(None, "блендер", 5, threshold=0.5, vector=query)
     assert [h.id for h in vec_hits] == ["c-blender"]
 
     # Порог отсекает слабые совпадения.
-    assert chunks_repo.search_vector(unit(5), top_k=5, threshold=0.5) == []
+    assert chunks_repo.search_vector(None, "мусор", 5, threshold=0.5, vector=unit(5)) == []
 
     # Поиск по словам находит артикул буква в букву, хотя вектор далёк.
-    text_hits = chunks_repo.search_text("KTL-1700", top_k=5)
+    text_hits = chunks_repo.search_fts(None, "KTL-1700", 5)
     assert [h.id for h in text_hits] == ["c-article"]
 
     # Гибрид: объединение обоих списков; фрагмент, найденный обоими, выше.
-    both = chunks_repo.search_hybrid(mix((0, 1.0), (1, 0.6)), "мощность", top_k=5, threshold=0.5, rrf_k=60)
+    both = chunks_repo.search_hybrid(
+        None, "мощность", 5, threshold=0.5, rrf_k=60, vector=mix((0, 1.0), (1, 0.6))
+    )
     ids = [h.id for h in both]
     assert "c-blender" in ids and "c-article" in ids
     assert ids[0] == "c-blender"
@@ -108,7 +110,7 @@ def test_hybrid_fuses_by_rank_not_score(clean_db: str) -> None:
         ],
     )
     chunks_repo.set_embeddings([("r1", unit(0)), ("r2", unit(1))])
-    hits = chunks_repo.search_hybrid(unit(1), "альфа", top_k=5, threshold=0.5, rrf_k=60)
+    hits = chunks_repo.search_hybrid(None, "альфа", 5, threshold=0.5, rrf_k=60, vector=unit(1))
     scores = {h.id: h.score for h in hits}
     # r1 найден только словами (ранг 1), r2 только вектором (ранг 1): вклады равны, порядок стабилен по сумме.
     assert set(scores) == {"r1", "r2"}

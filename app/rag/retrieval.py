@@ -7,7 +7,6 @@ hybrid_search — слияние рангов обоих (reciprocal rank fusion
 
 from typing import Literal
 
-from app.core.config import get_settings
 from app.rag.embedder import Embedder
 from app.repositories import chunks as chunks_repo
 from app.repositories.chunks import ChunkHit
@@ -40,12 +39,13 @@ def vector_search(
     document_ids: list[str] | None = None,
     embedder: Embedder | None = None,
 ) -> list[ChunkHit]:
-    s = get_settings()
     return chunks_repo.search_vector(
-        _vector(query, embedder),
-        top_k=top_k or s.search_top_k,
-        threshold=s.relevance_threshold if threshold is None else threshold,
-        document_ids=_ids(doc_ids, document_ids),
+        None,
+        query,
+        top_k,
+        threshold=threshold,
+        doc_ids=_ids(doc_ids, document_ids),
+        vector=_vector(query, embedder),
     )
 
 
@@ -56,9 +56,7 @@ def fts_search(
     doc_ids: list[str] | str | None = None,
     document_ids: list[str] | None = None,
 ) -> list[ChunkHit]:
-    return chunks_repo.search_text(
-        query, top_k=top_k or get_settings().search_top_k, document_ids=_ids(doc_ids, document_ids)
-    )
+    return chunks_repo.search_fts(None, query, top_k, doc_ids=_ids(doc_ids, document_ids))
 
 
 def hybrid_search(
@@ -70,14 +68,13 @@ def hybrid_search(
     document_ids: list[str] | None = None,
     embedder: Embedder | None = None,
 ) -> list[ChunkHit]:
-    s = get_settings()
     return chunks_repo.search_hybrid(
-        _vector(query, embedder),
+        None,
         query,
-        top_k=top_k or s.search_top_k,
-        threshold=s.relevance_threshold if threshold is None else threshold,
-        rrf_k=s.rrf_k,
-        document_ids=_ids(doc_ids, document_ids),
+        top_k,
+        threshold=threshold,
+        doc_ids=_ids(doc_ids, document_ids),
+        vector=_vector(query, embedder),
     )
 
 

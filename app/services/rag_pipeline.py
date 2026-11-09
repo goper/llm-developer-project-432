@@ -12,7 +12,7 @@ from typing import Any
 
 from app.agents.roles import critic_agent, generate_agent
 from app.core.config import get_settings
-from app.guardrails import guard_context, guard_output
+from app.guardrails import GuardReport, guard_context, guard_output
 from app.guardrails.injection import InjectionDetector
 from app.guardrails.pii import mask_pii
 from app.llm.client import run_agent
@@ -30,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 class DocumentRejectedError(Exception):
     """Слишком много подозрительных фрагментов: документ уходит человеку с причиной."""
+
+
+class SourceValidationError(structured.CardValidationError):
+    """Модель ссылается на фрагменты, которых не было в контексте, и не исправилась за все попытки."""
 
 
 def default_query(product_hint: str | None, document_names: list[str]) -> str:
@@ -91,17 +95,18 @@ def text_context(text: str, *, chunk_id: str = "text-1") -> Context:
 
 @dataclass
 class RagResult:
-    """Итог по документам. Распаковывается как `card, attempts, verdict, status`."""
+    """Итог по документам. Распаковывается как `card, attempts, verdict, status, guard`."""
 
     card: Card | None
     attempts: int
-    verdict: str  # approved | rejected
+    verdict: str  # approved | rejected | blocked
     status: str  # done | needs_review | rejected
+    guard: GuardReport | None = None
     output_issues: list[str] = field(default_factory=list)
     context_ids: set[str] = field(default_factory=set)
 
     def __iter__(self):
-        yield from (self.card, self.attempts, self.verdict, self.status)
+        yield from (self.card, self.attempts, self.verdict, self.status, self.guard)
 
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
@@ -122,11 +127,13 @@ def _as_chunk(hit: ChunkHit) -> dict[str, Any]:
     return {"chunk_id": hit.id, "text": hit.text, "metadata": hit.metadata(), "filename": hit.filename}
 
 
-async def retrieve_context_async(query: str | None, doc_ids: list[str] | str | None = None) -> Context:
+async def retrieve_context_async(
+    query: str | None, doc_ids: list[str] | str | None = None
+) -> tuple[Context, GuardReport]:
     """Поиск -> маскирование ПДн -> детектор инъекций -> контекст с шапками фрагментов.
 
     Без query берутся все фрагменты документов по порядку, с query — гибридный поиск по ним.
-    Подозрительных фрагментов больше порога — DocumentRejectedError: документ уходит человеку.
+    Возвращает контекст и отчёт защиты (что замаскировано, что исключено и почему).
     """
     ids = [doc_ids] if isinstance(doc_ids, str) else (list(doc_ids) if doc_ids else None)
     if query:
@@ -137,14 +144,9 @@ async def retrieve_context_async(query: str | None, doc_ids: list[str] | str | N
         raise ValueError("нужен запрос или список документов")
 
     safe, guard = await guard_context([_as_chunk(h) for h in hits])
-    if guard.needs_review:
-        raise DocumentRejectedError(
-            f"подозрительных фрагментов {len(guard.suspicious_chunks)}, это больше порога "
-            f"{get_settings().injection_suspicious_limit}: документ передан человеку"
-        )
     context = build_context(safe)
     context.report["guard"] = guard.to_dict()
-    return context
+    return context, guard
 
 
 async def run_rag_pipeline(
@@ -156,9 +158,13 @@ async def run_rag_pipeline(
     """Карточка по документам поставщика: контекст -> генерация -> проверка -> порог уверенности.
 
     Ссылка на фрагмент вне контекста — ошибка генерации: ответ уходит модели на исправление,
-    после всех попыток — CardValidationError. Низкая уверенность или находка фильтра выхода — needs_review.
+    после всех попыток — SourceValidationError. Низкая уверенность или находка фильтра выхода — needs_review.
+    Подозрительных фрагментов больше порога — needs_review без вызова модели.
     """
-    context = await retrieve_context_async(query, doc_ids)
+    context, guard = await retrieve_context_async(query, doc_ids)
+    if guard is not None and guard.needs_review:
+        logger.warning("подозрительных фрагментов %d: документ уходит человеку", len(guard.suspicious_chunks))
+        return RagResult(None, 0, "blocked", "needs_review", guard)
     allowed = context_chunk_ids(context)
     prompt = f"ФРАГМЕНТЫ:\n{context}"
     if query:
@@ -170,23 +176,28 @@ async def run_rag_pipeline(
     for attempt in range(1, attempts + 1):
         used = attempt
         full = prompt + ("\n\nЗАМЕЧАНИЯ ПРОВЕРКИ:\n" + "\n".join(f"- {i}" for i in issues) if issues else "")
-        card = await structured.validate_or_retry(
-            full,
-            generate_agent(),
-            Card,
-            check=lambda c: source_problems(c, allowed),
-            runner=run_agent,
-        )
+        try:
+            card = await structured.validate_or_retry(
+                full,
+                generate_agent(),
+                Card,
+                check=lambda c: source_problems(c, allowed),
+                runner=run_agent,
+            )
+        except structured.CardValidationError as exc:
+            if isinstance(exc.__cause__, structured.SourceCheckError):
+                raise SourceValidationError(str(exc)) from exc
+            raise
         raw = await run_agent(critic_agent(), f"ЧЕРНОВИК:\n{card.model_dump_json()}\n\n{prompt}")
         report = CritiqueReport.model_validate(parse_json_reply(raw))
         if report.verdict == "approve":
             break
         issues = list(report.issues)
     else:
-        return RagResult(card, attempts, "rejected", "rejected", context_ids=allowed)
+        return RagResult(card, attempts, "rejected", "rejected", guard, context_ids=allowed)
 
     card, output_issues = guard_output(card)
     status = structured.confidence_gate(card)
     if output_issues:
         status = "needs_review"
-    return RagResult(card, used, "approved", status, output_issues=output_issues, context_ids=allowed)
+    return RagResult(card, used, "approved", status, guard, output_issues, allowed)

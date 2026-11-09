@@ -7,12 +7,15 @@
 Слияние идёт по позициям в списках, а не по оценкам: оценки двух поисков несопоставимы.
 """
 
+from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any
 
+from psycopg import Connection
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from app.core.config import get_settings
 from app.core.db import connection
 
 
@@ -240,15 +243,48 @@ def _vector_literal(vec: list[float]) -> str:
     return "[" + ",".join(f"{x:.8f}" for x in vec) + "]"
 
 
+def _use(conn: Connection | None):
+    """Своё соединение из пула или переданное снаружи (например, в транзакции теста)."""
+    return nullcontext(conn) if conn is not None else connection()
+
+
+def _query_vector(query: str | None, vector: list[float] | None) -> str:
+    if vector is None:
+        if not query:
+            raise ValueError("нужен текст запроса или вектор")
+        vector = embed_query(query)
+    return _vector_literal(vector)
+
+
+def _doc_filter(doc_ids: list[str] | str | None, document_ids: list[str] | None) -> list[str] | None:
+    ids = doc_ids if doc_ids is not None else document_ids
+    if isinstance(ids, str):
+        return [ids]
+    return list(ids) if ids else None
+
+
 def search_vector(
-    query_vector: list[float],
+    conn: Connection | None = None,
+    query: str | None = None,
+    top_k: int | None = None,
     *,
-    top_k: int,
-    threshold: float,
+    threshold: float | None = None,
+    doc_ids: list[str] | str | None = None,
     document_ids: list[str] | None = None,
+    vector: list[float] | None = None,
 ) -> list[ChunkHit]:
-    qv = _vector_literal(query_vector)
-    with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
+    """Поиск по смыслу: ближайшие по косинусной близости, ниже порога — отсекаются.
+
+    Вектор запроса считается из текста (embed_query), либо передаётся готовым (vector).
+    """
+    settings = get_settings()
+    params = {
+        "qv": _query_vector(query, vector),
+        "doc_ids": _doc_filter(doc_ids, document_ids),
+        "threshold": settings.relevance_threshold if threshold is None else threshold,
+        "top_k": top_k or settings.search_top_k,
+    }
+    with _use(conn) as c, c.cursor(row_factory=dict_row) as cur:
         cur.execute(
             f"""
             SELECT {_FIELDS}, 1 - (c.embedding <=> %(qv)s::vector) AS score
@@ -259,13 +295,26 @@ def search_vector(
             ORDER BY c.embedding <=> %(qv)s::vector
             LIMIT %(top_k)s
             """,
-            {"qv": qv, "doc_ids": document_ids, "threshold": threshold, "top_k": top_k},
+            params,
         )
         return [_hit(r, float(r["score"])) for r in cur.fetchall()]
 
 
-def search_text(query_text: str, *, top_k: int, document_ids: list[str] | None = None) -> list[ChunkHit]:
-    with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
+def search_fts(
+    conn: Connection | None = None,
+    query: str = "",
+    top_k: int | None = None,
+    *,
+    doc_ids: list[str] | str | None = None,
+    document_ids: list[str] | None = None,
+) -> list[ChunkHit]:
+    """Поиск по словам и артикулам: полнотекстовый индекс PostgreSQL (русская морфология)."""
+    params = {
+        "q": query,
+        "doc_ids": _doc_filter(doc_ids, document_ids),
+        "top_k": top_k or get_settings().search_top_k,
+    }
+    with _use(conn) as c, c.cursor(row_factory=dict_row) as cur:
         cur.execute(
             f"""
             SELECT {_FIELDS}, ts_rank_cd(c.tsv, q) AS score
@@ -275,28 +324,39 @@ def search_text(query_text: str, *, top_k: int, document_ids: list[str] | None =
             ORDER BY score DESC
             LIMIT %(top_k)s
             """,
-            {"q": query_text, "doc_ids": document_ids, "top_k": top_k},
+            params,
         )
         return [_hit(r, float(r["score"])) for r in cur.fetchall()]
 
 
 def search_hybrid(
-    query_vector: list[float],
-    query_text: str,
+    conn: Connection | None = None,
+    query: str = "",
+    top_k: int | None = None,
     *,
-    top_k: int,
-    threshold: float,
-    rrf_k: int,
+    threshold: float | None = None,
+    rrf_k: int | None = None,
+    doc_ids: list[str] | str | None = None,
     document_ids: list[str] | None = None,
+    vector: list[float] | None = None,
 ) -> list[ChunkHit]:
     """Слияние по обратным позициям: вклад фрагмента = сумма 1 / (rrf_k + позиция) по спискам.
 
     Порог относится к векторной части: текстовое совпадение по артикулу проходит и при низкой
     близости, потому что артикул по смыслу может не совпадать ни с чем.
     """
-    qv = _vector_literal(query_vector)
-    pool = max(top_k * 4, 20)
-    with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
+    settings = get_settings()
+    k = top_k or settings.search_top_k
+    params = {
+        "qv": _query_vector(query, vector),
+        "q": query,
+        "doc_ids": _doc_filter(doc_ids, document_ids),
+        "threshold": settings.relevance_threshold if threshold is None else threshold,
+        "pool": max(k * 4, 20),
+        "rrf_k": settings.rrf_k if rrf_k is None else rrf_k,
+        "top_k": k,
+    }
+    with _use(conn) as c, c.cursor(row_factory=dict_row) as cur:
         cur.execute(
             f"""
             WITH vec AS (
@@ -333,14 +393,6 @@ def search_hybrid(
             ORDER BY f.score DESC
             LIMIT %(top_k)s
             """,
-            {
-                "qv": qv,
-                "q": query_text,
-                "doc_ids": document_ids,
-                "threshold": threshold,
-                "pool": pool,
-                "rrf_k": rrf_k,
-                "top_k": top_k,
-            },
+            params,
         )
         return [_hit(r, float(r["score"])) for r in cur.fetchall()]
